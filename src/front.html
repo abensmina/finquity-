@@ -1,0 +1,333 @@
+2/3/2026
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Finquity - Plateforme d'Analyse Financière</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: #f9fafa;
+      color: #1a1a1a;
+    }
+
+    header {
+      background-color: #ffffff;
+      padding: 25px 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e6e6e6;
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    nav a {
+      color: #1a1a1a;
+      text-decoration: none;
+      margin-left: 30px;
+      font-weight: 500;
+      font-size: 15px;
+      position: relative;
+    }
+
+    nav a::after {
+      content: '';
+      display: block;
+      width: 0;
+      height: 2px;
+      background: #1a1a1a;
+      transition: width .3s;
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+    }
+
+    nav a:hover::after {
+      width: 100%;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 100px 20px 60px;
+    }
+
+    .hero h1 {
+      font-size: 40px;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 20px;
+    }
+
+    .hero p {
+      font-size: 20px;
+      font-weight: 400;
+      color: #555;
+      margin-bottom: 40px;
+    }
+
+    .cta-button {
+      display: inline-block;
+      background-color: #111;
+      color: white;
+      padding: 14px 28px;
+      border-radius: 6px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background-color 0.3s;
+    }
+
+    .cta-button:hover {
+      background-color: #333;
+    }
+
+    .trusted {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .trusted p {
+      color: #888;
+      font-size: 14px;
+    }
+
+    .highlight-section {
+      background-color: #ffffff;
+      padding: 80px 60px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 40px;
+      border-top: 1px solid #eaeaea;
+    }
+
+    .highlight-block {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .highlight-block h3 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #111;
+      margin-bottom: 10px;
+    }
+
+    .highlight-block p {
+      font-size: 15px;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .newsletter {
+      background: #111;
+      color: white;
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .newsletter h2 {
+      font-size: 28px;
+      margin-bottom: 15px;
+    }
+
+    .newsletter p {
+      font-size: 16px;
+      margin-bottom: 30px;
+    }
+
+    .newsletter form {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .newsletter input[type="email"] {
+      padding: 12px 20px;
+      border-radius: 6px;
+      border: none;
+      font-size: 15px;
+      min-width: 240px;
+    }
+
+    .newsletter button {
+      padding: 12px 24px;
+      background: white;
+      color: #111;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .auth-section {
+      display: flex;
+      justify-content: center;
+      padding: 60px 20px;
+      background-color: #ffffff;
+      border-top: 1px solid #eaeaea;
+    }
+
+    .auth-container {
+      width: 100%;
+      max-width: 400px;
+      padding: 40px;
+      background-color: #f9f9f9;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .auth-container h2 {
+      margin-bottom: 25px;
+      font-size: 24px;
+      color: #111;
+      text-align: center;
+    }
+
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .auth-form label {
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .auth-form input {
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .auth-form button {
+      padding: 12px;
+      background-color: #111;
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .auth-form button:hover {
+      background-color: #000;
+    }
+
+    .auth-note {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    .auth-note a {
+      color: #0073e6;
+      text-decoration: none;
+    }
+
+    footer {
+      background-color: #f1f3f5;
+      color: #888;
+      text-align: center;
+      padding: 30px 20px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">Finquity</div>
+    <nav>
+      <a href="#">Company</a>
+      <a href="#">Invest</a>
+      <a href="#">Resources</a>
+      <a href="#">Log In</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h1>Precision. Clarity. Finquity.</h1>
+    <p>Building the tools to empower smarter financial decisions — for everyone.</p>
+    <a href="#" class="cta-button">Request Access</a>
+  </section>
+
+  <section class="trusted">
+    <p>Trusted by startups and SMEs across Europe</p>
+    <img src="logos.png" alt="logos" style="max-width: 600px; width: 100%; margin-top: 20px;">
+  </section>
+
+  <section class="highlight-section">
+    <div class="highlight-block">
+      <h3>Institutional-Grade Insights</h3>
+      <p>Access detailed analysis, valuation tools and predictive models, tailored for SMEs and private investors.</p>
+    </div>
+    <div class="highlight-block">
+      <h3>Real-Time Dashboards</h3>
+      <p>Track your financial health with customizable views and dynamic KPIs in one secure place.</p>
+    </div>
+    <div class="highlight-block">
+      <h3>Transparent Investment Planning</h3>
+      <p>Use our simulation engine to prepare, stress-test and compare different growth or exit strategies.</p>
+    </div>
+  </section>
+
+  <section class="highlight-section">
+    <div class="highlight-block">
+      <h3>1. Analyse</h3>
+      <p>Connectez vos données financières pour obtenir un diagnostic clair.</p>
+    </div>
+    <div class="highlight-block">
+      <h3>2. Simulation</h3>
+      <p>Comparez des scénarios de croissance, financement ou cession.</p>
+    </div>
+    <div class="highlight-block">
+      <h3>3. Décision</h3>
+      <p>Recevez des recommandations et rapports prêts à partager.</p>
+    </div>
+  </section>
+
+  <section class="newsletter">
+    <h2>Stay ahead in private finance</h2>
+    <p>Join our waiting list and get early access to Finquity</p>
+    <form>
+      <input type="email" placeholder="Your email" required />
+      <button type="submit">Request Access</button>
+    </form>
+  </section>
+
+  <!-- Authentification -->
+  <section class="auth-section">
+    <div class="auth-container">
+      <h2>Connexion à Finquity</h2>
+      <form class="auth-form">
+        <label for="email">Adresse email</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="password">Mot de passe</label>
+        <input type="password" id="password" name="password" required>
+
+        <button type="submit">Se connecter</button>
+      </form>
+      <p class="auth-note">Vous n’avez pas de compte ? <a href="#">Créer un compte</a></p>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 Finquity — All rights reserved.</p>
+  </footer>
+
+</body>
+</html>
