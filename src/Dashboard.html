@@ -820,12 +820,12 @@
 
   <!-- ─── HEADER ─── -->
   <header id="header">
-    <a href="#" class="logo" onclick="showLanding()">Finqui<span>ty</span></a>
+    <a href="index.html" class="logo">Finqui<span>ty</span></a>
     <nav>
       <a href="#features" class="nav-desktop">Platform</a>
       <a href="#how" class="nav-desktop">How it works</a>
       <a href="#waitlist" class="nav-desktop">Early Access</a>
-      <a href="#" class="nav-cta" onclick="showLogin(event)">Sign In</a>
+      <a href="login.html" class="nav-cta">Sign In</a>
     </nav>
   </header>
 
@@ -1045,25 +1045,7 @@
 
   </div><!-- end #landing -->
 
-  <!-- ─── LOGIN PAGE ─── -->
-  <div class="login-page" id="loginPage">
-    <div class="login-panel">
-      <div class="login-logo">Finqui<span>ty</span></div>
-      <div class="login-tagline">Precision · Clarity · Finquity</div>
-      <form class="login-form" onsubmit="return false;">
-        <div class="form-group">
-          <label for="login-email">Email address</label>
-          <input type="email" id="login-email" placeholder="you@company.com" />
-        </div>
-        <div class="form-group">
-          <label for="login-password">Password</label>
-          <input type="password" id="login-password" placeholder="••••••••" />
-        </div>
-        <button class="login-submit" type="submit">Sign In</button>
-      </form>
-      <p class="login-footer">No account yet? <a href="#">Request access</a> &nbsp;·&nbsp; <a href="#">Forgot password?</a></p>
-    </div>
-  </div>
+
 
   <script>
     // Custom cursor
@@ -1109,18 +1091,7 @@
     }, { threshold: 0.12 });
     reveals.forEach(r => observer.observe(r));
 
-    // Login / Landing toggle
-    function showLogin(e) {
-      if (e) e.preventDefault();
-      document.getElementById('landing').style.display = 'none';
-      document.getElementById('loginPage').classList.add('active');
-      window.scrollTo(0,0);
-    }
-    function showLanding() {
-      document.getElementById('landing').style.display = 'block';
-      document.getElementById('loginPage').classList.remove('active');
-      window.scrollTo(0,0);
-    }
+    // Login / Landing toggle — removed, Sign In now redirects to login.html
   </script>
 </body>
 </html>
