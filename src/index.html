@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Finquity — Precision. Clarity. Finquity.</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:        #0a0a0b;
+      --ink-2:      #111113;
+      --ink-3:      #1c1c1f;
+      --gold:       #c9a96e;
+      --gold-light: #e2c99a;
+      --gold-dim:   rgba(201,169,110,0.15);
+      --muted:      #6b6b74;
+      --muted-2:    #9191a0;
+      --border:     rgba(255,255,255,0.07);
+      --border-gold:rgba(201,169,110,0.25);
+      --white:      #f5f4f0;
+      --font-display:'Cormorant Garamond', Georgia, serif;
+      --font-body:  'DM Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--ink);
+      color: var(--white);
+      font-family: var(--font-body);
+      font-weight: 300;
+      line-height: 1.6;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    .cursor { position:fixed; width:8px; height:8px; background:var(--gold); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:transform .1s ease; }
+    .cursor-ring { position:fixed; width:32px; height:32px; border:1px solid rgba(201,169,110,0.4); border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:transform .18s ease, width .2s, height .2s; }
+
+    body::before {
+      content:''; position:fixed; inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events:none; z-index:1; opacity:.4;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position:fixed; top:0; left:0; right:0; z-index:100;
+      display:flex; justify-content:space-between; align-items:center;
+      padding:28px 60px;
+      border-bottom:1px solid transparent;
+      transition:border-color .4s, background .4s, backdrop-filter .4s;
+    }
+    header.scrolled {
+      background:rgba(10,10,11,0.85);
+      backdrop-filter:blur(16px);
+      border-color:var(--border);
+    }
+    .logo {
+      font-family:var(--font-display); font-size:26px; font-weight:600;
+      letter-spacing:.04em; color:var(--white); text-decoration:none;
+    }
+    .logo span { color:var(--gold); }
+
+    nav { display:flex; align-items:center; gap:40px; }
+    nav a {
+      font-size:13px; font-weight:400; letter-spacing:.1em;
+      text-transform:uppercase; color:var(--muted-2);
+      text-decoration:none; transition:color .3s;
+    }
+    nav a:hover { color:var(--white); }
+    .nav-cta {
+      font-size:12px !important; font-weight:500 !important;
+      color:var(--gold) !important;
+      border:1px solid var(--border-gold); padding:9px 22px; border-radius:2px;
+      transition:background .3s !important;
+    }
+    .nav-cta:hover { background:var(--gold-dim); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height:100vh; display:flex; flex-direction:column;
+      justify-content:center; padding:160px 60px 100px;
+      position:relative; overflow:hidden;
+    }
+    .hero-bg-grid {
+      position:absolute; inset:0;
+      background-image:
+        linear-gradient(rgba(201,169,110,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201,169,110,0.03) 1px, transparent 1px);
+      background-size:80px 80px; z-index:0;
+    }
+    .hero-bg-glow {
+      position:absolute; top:-200px; right:-100px;
+      width:700px; height:700px;
+      background:radial-gradient(circle, rgba(201,169,110,0.06) 0%, transparent 70%);
+      z-index:0; animation:pulse-glow 8s ease-in-out infinite;
+    }
+    @keyframes pulse-glow { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.6;transform:scale(1.08);} }
+
+    .hero-content { position:relative; z-index:2; max-width:760px; }
+
+    .hero-eyebrow {
+      display:inline-flex; align-items:center; gap:10px;
+      font-size:11px; font-weight:500; letter-spacing:.18em;
+      text-transform:uppercase; color:var(--gold); margin-bottom:36px;
+      opacity:0; animation:fade-up .8s .2s forwards;
+    }
+    .hero-eyebrow::before { content:''; display:block; width:28px; height:1px; background:var(--gold); }
+
+    .hero h1 {
+      font-family:var(--font-display);
+      font-size:clamp(52px,7vw,88px); font-weight:300;
+      line-height:1.05; color:var(--white); margin-bottom:30px;
+      opacity:0; animation:fade-up .9s .4s forwards;
+    }
+    .hero h1 em { font-style:italic; color:var(--gold); }
+
+    .hero-sub {
+      font-size:16px; font-weight:300; color:var(--muted-2);
+      line-height:1.8; max-width:480px; margin-bottom:52px;
+      opacity:0; animation:fade-up .9s .6s forwards;
+    }
+
+    .hero-actions {
+      display:flex; align-items:center; gap:28px;
+      opacity:0; animation:fade-up .9s .8s forwards;
+    }
+
+    .btn-primary {
+      display:inline-flex; align-items:center; gap:10px;
+      background:var(--gold); color:var(--ink);
+      font-family:var(--font-body); font-size:12px; font-weight:500;
+      letter-spacing:.12em; text-transform:uppercase;
+      text-decoration:none; padding:16px 32px; border-radius:2px;
+      transition:background .3s, transform .2s;
+    }
+    .btn-primary:hover { background:var(--gold-light); transform:translateY(-1px); }
+    .btn-primary svg { transition:transform .2s; }
+    .btn-primary:hover svg { transform:translateX(3px); }
+
+    .btn-ghost {
+      font-size:12px; font-weight:400; letter-spacing:.1em;
+      text-transform:uppercase; color:var(--muted-2); text-decoration:none;
+      border-bottom:1px solid var(--border); padding-bottom:3px;
+      transition:color .3s, border-color .3s;
+    }
+    .btn-ghost:hover { color:var(--white); border-color:var(--muted-2); }
+
+    .hero-stats {
+      position:absolute; bottom:60px; right:60px;
+      display:flex; gap:48px; z-index:2;
+      opacity:0; animation:fade-in 1s 1.2s forwards;
+    }
+    .stat { text-align:right; }
+    .stat-value { font-family:var(--font-display); font-size:36px; font-weight:300; color:var(--white); letter-spacing:-.02em; line-height:1; }
+    .stat-label { font-size:11px; font-weight:400; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-top:6px; }
+
+    @keyframes fade-up { from{opacity:0;transform:translateY(24px);} to{opacity:1;transform:translateY(0);} }
+    @keyframes fade-in  { from{opacity:0;} to{opacity:1;} }
+
+    /* ── MARQUEE ── */
+    .trust-bar {
+      border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+      padding:22px 0; overflow:hidden; position:relative;
+    }
+    .trust-bar::before,.trust-bar::after {
+      content:''; position:absolute; top:0; bottom:0; width:120px; z-index:2;
+    }
+    .trust-bar::before { left:0; background:linear-gradient(90deg,var(--ink),transparent); }
+    .trust-bar::after  { right:0; background:linear-gradient(-90deg,var(--ink),transparent); }
+    .marquee-track { display:flex; gap:80px; animation:marquee 28s linear infinite; width:max-content; }
+    .marquee-item {
+      font-family:var(--font-display); font-size:14px; font-weight:300;
+      letter-spacing:.12em; color:var(--muted); text-transform:uppercase;
+      white-space:nowrap; display:flex; align-items:center; gap:80px;
+    }
+    .marquee-item::after { content:'·'; color:var(--gold); font-size:20px; line-height:0; }
+    @keyframes marquee { from{transform:translateX(0);} to{transform:translateX(-50%);} }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      display:inline-flex; align-items:center; gap:10px;
+      font-size:10px; font-weight:500; letter-spacing:.2em;
+      text-transform:uppercase; color:var(--gold); margin-bottom:24px;
+    }
+    .section-label::before { content:''; display:block; width:20px; height:1px; background:var(--gold); }
+
+    /* ── FEATURES ── */
+    .features { padding:140px 60px; background:var(--ink-2); }
+    .features-header { display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:end; margin-bottom:80px; }
+    .features-title { font-family:var(--font-display); font-size:clamp(36px,4vw,52px); font-weight:300; line-height:1.1; color:var(--white); }
+    .features-title em { font-style:italic; color:var(--gold); }
+    .features-desc { font-size:15px; font-weight:300; color:var(--muted-2); line-height:1.8; }
+    .features-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); border:1px solid var(--border); }
+    .feature-card { background:var(--ink-2); padding:48px 40px; transition:background .3s; position:relative; overflow:hidden; }
+    .feature-card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--gold),transparent); opacity:0; transition:opacity .4s; }
+    .feature-card:hover { background:var(--ink-3); }
+    .feature-card:hover::before { opacity:1; }
+    .feature-number { font-family:var(--font-display); font-size:48px; font-weight:300; color:rgba(201,169,110,0.15); line-height:1; margin-bottom:32px; transition:color .3s; }
+    .feature-card:hover .feature-number { color:rgba(201,169,110,0.3); }
+    .feature-card h3 { font-family:var(--font-display); font-size:22px; font-weight:400; color:var(--white); margin-bottom:14px; }
+    .feature-card p { font-size:14px; font-weight:300; color:var(--muted-2); line-height:1.8; }
+
+    /* ── HOW IT WORKS ── */
+    .how { padding:140px 60px; background:var(--ink); }
+    .how-inner { display:grid; grid-template-columns:300px 1fr; gap:100px; align-items:start; }
+    .how-left { position:sticky; top:120px; }
+    .how-left h2 { font-family:var(--font-display); font-size:clamp(36px,4vw,50px); font-weight:300; line-height:1.1; color:var(--white); margin-bottom:20px; }
+    .how-left h2 em { font-style:italic; color:var(--gold); }
+    .how-left p { font-size:14px; font-weight:300; color:var(--muted); line-height:1.8; }
+    .how-steps { display:flex; flex-direction:column; }
+    .step { display:grid; grid-template-columns:80px 1fr; gap:32px; padding:48px 0; border-bottom:1px solid var(--border); transition:padding-left .3s; }
+    .step:first-child { border-top:1px solid var(--border); }
+    .step:hover { padding-left:8px; }
+    .step-num { font-family:var(--font-display); font-size:13px; font-weight:300; color:var(--gold); letter-spacing:.1em; padding-top:6px; }
+    .step h3 { font-family:var(--font-display); font-size:26px; font-weight:400; color:var(--white); margin-bottom:12px; }
+    .step p { font-size:14px; font-weight:300; color:var(--muted-2); line-height:1.8; }
+
+    /* ── METRICS ── */
+    .metrics { padding:100px 60px; background:var(--ink-2); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+    .metrics-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border); border:1px solid var(--border); }
+    .metric-item { background:var(--ink-2); padding:52px 40px; text-align:center; }
+    .metric-value { font-family:var(--font-display); font-size:56px; font-weight:300; color:var(--white); letter-spacing:-.03em; line-height:1; margin-bottom:10px; }
+    .metric-value span { color:var(--gold); }
+    .metric-label { font-size:11px; font-weight:400; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); }
+
+    /* ── WAITLIST ── */
+    .waitlist { padding:160px 60px; background:var(--ink); text-align:center; position:relative; overflow:hidden; }
+    .waitlist-glow { position:absolute; bottom:-200px; left:50%; transform:translateX(-50%); width:800px; height:600px; background:radial-gradient(circle, rgba(201,169,110,0.05) 0%, transparent 70%); pointer-events:none; }
+    .waitlist-inner { position:relative; z-index:2; max-width:560px; margin:0 auto; }
+    .waitlist h2 { font-family:var(--font-display); font-size:clamp(40px,5vw,64px); font-weight:300; line-height:1.1; color:var(--white); margin-bottom:20px; }
+    .waitlist h2 em { font-style:italic; color:var(--gold); }
+    .waitlist p { font-size:15px; font-weight:300; color:var(--muted-2); margin-bottom:48px; line-height:1.8; }
+    .waitlist-form { display:flex; max-width:440px; margin:0 auto 20px; border:1px solid var(--border-gold); border-radius:2px; overflow:hidden; transition:border-color .3s; }
+    .waitlist-form:focus-within { border-color:var(--gold); }
+    .waitlist-form input { flex:1; background:rgba(201,169,110,0.04); border:none; outline:none; padding:16px 20px; font-family:var(--font-body); font-size:14px; font-weight:300; color:var(--white); }
+    .waitlist-form input::placeholder { color:var(--muted); }
+    .waitlist-form button { background:var(--gold); color:var(--ink); border:none; padding:16px 28px; font-family:var(--font-body); font-size:11px; font-weight:500; letter-spacing:.14em; text-transform:uppercase; cursor:pointer; transition:background .3s; white-space:nowrap; }
+    .waitlist-form button:hover { background:var(--gold-light); }
+    .waitlist-note { font-size:12px; color:var(--muted); letter-spacing:.05em; transition:color .3s; }
+
+    /* ── FOOTER ── */
+    footer { background:var(--ink-2); border-top:1px solid var(--border); padding:60px; display:grid; grid-template-columns:1fr auto; align-items:center; gap:40px; }
+    .footer-logo { font-family:var(--font-display); font-size:20px; font-weight:600; color:var(--white); margin-bottom:10px; }
+    .footer-logo span { color:var(--gold); }
+    .footer-copy { font-size:12px; font-weight:300; color:var(--muted); letter-spacing:.05em; }
+    .footer-links { display:flex; gap:36px; }
+    .footer-links a { font-size:12px; font-weight:400; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); text-decoration:none; transition:color .3s; }
+    .footer-links a:hover { color:var(--gold); }
+
+    /* ── REVEAL ── */
+    .reveal { opacity:0; transform:translateY(30px); transition:opacity .8s ease, transform .8s ease; }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+
+    @media(max-width:900px){
+      header { padding:24px 30px; }
+      .hero { padding:120px 30px 80px; }
+      .hero-stats { display:none; }
+      .features,.how,.metrics,.waitlist { padding:80px 30px; }
+      footer { padding:40px 30px; grid-template-columns:1fr; }
+      .features-header { grid-template-columns:1fr; gap:30px; }
+      .features-grid { grid-template-columns:1fr; }
+      .how-inner { grid-template-columns:1fr; gap:40px; }
+      .how-left { position:static; }
+      .metrics-grid { grid-template-columns:repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- HEADER -->
+  <header id="header">
+    <a href="index.html" class="logo">Finqui<span>ty</span></a>
+    <nav>
+      <a href="#features">Platform</a>
+      <a href="#how">How it works</a>
+      <a href="#waitlist">Early Access</a>
+      <a href="login.html" class="nav-cta">Sign In</a>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg-grid"></div>
+    <div class="hero-bg-glow"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">Financial Intelligence Platform</div>
+      <h1>Precision.<br>Clarity.<br><em>Finquity.</em></h1>
+      <p class="hero-sub">Institutional-grade financial analysis, valuation modelling and scenario simulation — built for SMEs and private investors.</p>
+      <div class="hero-actions">
+        <a href="login.html" class="btn-primary">
+          Request Access
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 7h12M7 1l6 6-6 6"/></svg>
+        </a>
+        <a href="#how" class="btn-ghost">See how it works</a>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-value">DCF</div><div class="stat-label">Valuation engine</div></div>
+      <div class="stat"><div class="stat-value">LBO</div><div class="stat-label">Simulation</div></div>
+      <div class="stat"><div class="stat-value">PDF</div><div class="stat-label">Auto reports</div></div>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="trust-bar">
+    <div class="marquee-track">
+      <div class="marquee-item">Financial Analysis</div>
+      <div class="marquee-item">DCF Valuation</div>
+      <div class="marquee-item">LBO Simulation</div>
+      <div class="marquee-item">Market Multiples</div>
+      <div class="marquee-item">Liquidity Ratios</div>
+      <div class="marquee-item">Profitability Ratios</div>
+      <div class="marquee-item">Automated Reporting</div>
+      <div class="marquee-item">SME Intelligence</div>
+      <div class="marquee-item">Financial Analysis</div>
+      <div class="marquee-item">DCF Valuation</div>
+      <div class="marquee-item">LBO Simulation</div>
+      <div class="marquee-item">Market Multiples</div>
+      <div class="marquee-item">Liquidity Ratios</div>
+      <div class="marquee-item">Profitability Ratios</div>
+      <div class="marquee-item">Automated Reporting</div>
+      <div class="marquee-item">SME Intelligence</div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <div class="features-header reveal">
+      <div>
+        <div class="section-label">Platform</div>
+        <h2 class="features-title">Everything you need to<br><em>assess, value & decide</em></h2>
+      </div>
+      <p class="features-desc">A complete toolkit for financial professionals and business owners who need clarity without the complexity of institutional software.</p>
+    </div>
+    <div class="features-grid reveal">
+      <div class="feature-card"><div class="feature-number">01</div><h3>Financial Analysis</h3><p>Import balance sheets and income statements. Get instant diagnostic across liquidity, profitability, leverage and operational efficiency ratios.</p></div>
+      <div class="feature-card"><div class="feature-number">02</div><h3>DCF Valuation</h3><p>Project free cash flows, compute WACC, derive terminal value and produce a full discounted cash flow model in minutes, not hours.</p></div>
+      <div class="feature-card"><div class="feature-number">03</div><h3>Market Multiples</h3><p>Benchmark your company against comparable transactions using EV/EBITDA, EV/Revenue and P/E multiples from relevant market data.</p></div>
+      <div class="feature-card"><div class="feature-number">04</div><h3>LBO Simulation</h3><p>Model leveraged buyout scenarios, stress-test financing structures and compute internal rate of return across multiple exit assumptions.</p></div>
+      <div class="feature-card"><div class="feature-number">05</div><h3>Automated Reports</h3><p>Generate professional PDF reports with branded cover pages, executive summaries, charts and AI-generated financial interpretations.</p></div>
+      <div class="feature-card"><div class="feature-number">06</div><h3>Secure Dashboard</h3><p>Track all your analyses in one place. Store, compare and share financial reports securely across your team or with external advisors.</p></div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how" id="how">
+    <div class="how-inner">
+      <div class="how-left reveal">
+        <div class="section-label">Process</div>
+        <h2>How <em>Finquity</em> works</h2>
+        <p>From raw financial data to a board-ready report in three structured steps.</p>
+      </div>
+      <div class="how-steps">
+        <div class="step reveal">
+          <div class="step-num">01 /</div>
+          <div><h3>Import your data</h3><p>Upload balance sheets, income statements or cash flow data via CSV or Excel. Finquity structures and validates everything automatically.</p></div>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">02 /</div>
+          <div><h3>Run your analysis</h3><p>Select from financial ratio analysis, DCF valuation, comparable multiples or LBO simulation. Adjust assumptions and run scenarios in real time.</p></div>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">03 /</div>
+          <div><h3>Export your report</h3><p>Download a professional PDF report complete with charts, interpreted ratios and an executive-level synthesis ready to share.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- METRICS -->
+  <section class="metrics">
+    <div class="metrics-grid reveal">
+      <div class="metric-item"><div class="metric-value">8<span>+</span></div><div class="metric-label">Financial ratios</div></div>
+      <div class="metric-item"><div class="metric-value">3<span>×</span></div><div class="metric-label">Valuation methods</div></div>
+      <div class="metric-item"><div class="metric-value">1<span>'</span></div><div class="metric-label">To generate a report</div></div>
+      <div class="metric-item"><div class="metric-value">100<span>%</span></div><div class="metric-label">Automated analysis</div></div>
+    </div>
+  </section>
+
+  <!-- WAITLIST -->
+  <section class="waitlist" id="waitlist">
+    <div class="waitlist-glow"></div>
+    <div class="waitlist-inner reveal">
+      <div class="section-label" style="justify-content:center;">Early Access</div>
+      <h2>Stay ahead in<br><em>private finance</em></h2>
+      <p>Join the waiting list and be among the first to access Finquity when we launch.</p>
+      <div class="waitlist-form">
+        <input type="email" placeholder="your@email.com" id="wl-email"/>
+        <button type="button" onclick="submitWaitlist()">Request Access</button>
+      </div>
+      <p class="waitlist-note" id="wl-note">No spam. No obligations. Unsubscribe anytime.</p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div>
+      <div class="footer-logo">Finqui<span>ty</span></div>
+      <p class="footer-copy">&copy; 2025 Finquity — All rights reserved.</p>
+    </div>
+    <div class="footer-links">
+      <a href="#features">Platform</a>
+      <a href="login.html">Sign In</a>
+      <a href="#waitlist">Contact</a>
+    </div>
+  </footer>
+
+  <script>
+    /* cursor */
+    const cursor=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+    (function loop(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;cursor.style.left=mx+'px';cursor.style.top=my+'px';ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(loop);})();
+    document.querySelectorAll('a,button,input').forEach(el=>{
+      el.addEventListener('mouseenter',()=>{ring.style.width='48px';ring.style.height='48px';cursor.style.transform='translate(-50%,-50%) scale(1.5)';});
+      el.addEventListener('mouseleave',()=>{ring.style.width='32px';ring.style.height='32px';cursor.style.transform='translate(-50%,-50%) scale(1)';});
+    });
+
+    /* scroll header */
+    window.addEventListener('scroll',()=>document.getElementById('header').classList.toggle('scrolled',window.scrollY>40));
+
+    /* scroll reveal */
+    const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}}),{threshold:.12});
+    document.querySelectorAll('.reveal').forEach(r=>obs.observe(r));
+
+    /* waitlist */
+    function submitWaitlist(){
+      const email=document.getElementById('wl-email').value;
+      const note=document.getElementById('wl-note');
+      if(!email||!email.includes('@')){note.textContent='Please enter a valid email address.';note.style.color='#e05555';return;}
+      note.textContent="✓ You're on the list. We'll be in touch soon.";
+      note.style.color='#4caf7d';
+      document.getElementById('wl-email').value='';
+    }
+  </script>
+</body>
+</html>
