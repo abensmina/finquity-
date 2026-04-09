@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Finquity — Analyse financière</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <script src="finquity-parser.js"></script>
+  <script src="chart.umd.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --ink:#0a0a0b;--ink-2:#111113;--ink-3:#1c1c1f;--ink-4:#242428;
+      --gold:#c9a96e;--gold-light:#e2c99a;--gold-dim:rgba(201,169,110,0.12);--gold-dim2:rgba(201,169,110,0.06);
+      --muted:#6b6b74;--muted-2:#9191a0;
+      --border:rgba(255,255,255,0.07);--border-gold:rgba(201,169,110,0.25);
+      --white:#f5f4f0;
+      --green:#4caf7d;--green-dim:rgba(76,175,125,0.12);
+      --amber:#e0a455;--amber-dim:rgba(224,164,85,0.12);
+      --red:#e05555;--red-dim:rgba(224,85,85,0.12);
+      --font-display:'Cormorant Garamond',Georgia,serif;
+      --font-body:'DM Sans',sans-serif;
+    }
+    body{background:var(--ink);color:var(--white);font-family:var(--font-body);font-weight:300;min-height:100vh;display:flex;flex-direction:column;cursor:none}
+    .cursor{position:fixed;width:8px;height:8px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .1s}
+    .cursor-ring{position:fixed;width:32px;height:32px;border:1px solid rgba(201,169,110,0.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform .18s,width .2s,height .2s}
+
+    /* Sidebar */
+    .sidebar{position:fixed;top:0;left:0;bottom:0;width:220px;background:var(--ink-2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:32px 0;z-index:50}
+    .sidebar-logo{font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--white);padding:0 28px;margin-bottom:48px;text-decoration:none;letter-spacing:.03em}
+    .sidebar-logo span{color:var(--gold)}
+    .sidebar-section{font-size:10px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);padding:0 28px;margin-bottom:10px}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:11px 28px;font-size:13px;color:var(--muted-2);text-decoration:none;transition:color .2s,background .2s;border-left:2px solid transparent}
+    .nav-item:hover{color:var(--white);background:rgba(255,255,255,0.03)}
+    .nav-item.active{color:var(--gold);background:var(--gold-dim2);border-left-color:var(--gold)}
+    .nav-item svg{width:15px;height:15px;flex-shrink:0}
+    .sidebar-spacer{flex:1}
+    .sidebar-user{margin:0 16px;padding:14px 16px;border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;gap:10px}
+    .user-avatar{width:28px;height:28px;border-radius:50%;background:var(--gold-dim);border:1px solid var(--border-gold);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:13px;color:var(--gold)}
+    .user-name{font-size:12px;color:var(--muted-2)}
+
+    /* Topbar */
+    .topbar{position:fixed;top:0;left:220px;right:0;height:64px;background:rgba(10,10,11,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 48px;z-index:40}
+    .breadcrumb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+    .breadcrumb .current{color:var(--white);font-weight:400}
+    .topbar-right{display:flex;align-items:center;gap:12px}
+    .btn-next{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:var(--ink);font-family:var(--font-body);font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;border:none;border-radius:2px;padding:10px 20px;cursor:pointer;text-decoration:none;transition:background .2s}
+    .btn-next:hover{background:var(--gold-light)}
+    .btn-next svg{width:12px;height:12px}
+
+    /* Main */
+    .main{margin-left:220px;padding-top:64px;flex:1}
+    .page-content{padding:52px 48px}
+
+    /* Header */
+    .page-header{margin-bottom:40px;opacity:0;animation:fade-up .7s .1s forwards}
+    .page-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:10px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:12px}
+    .page-eyebrow::before{content:'';display:block;width:16px;height:1px;background:var(--gold)}
+    .page-title{font-family:var(--font-display);font-size:38px;font-weight:300;line-height:1.1;margin-bottom:6px}
+    .page-title em{font-style:italic;color:var(--gold)}
+    .page-sub{font-size:13px;color:var(--muted-2)}
+
+    /* Steps */
+    .steps{display:flex;align-items:center;margin-bottom:40px;opacity:0;animation:fade-up .7s .15s forwards}
+    .step-item{display:flex;align-items:center;gap:10px}
+    .step-dot{width:28px;height:28px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--muted);transition:all .3s}
+    .step-dot.done{border-color:var(--green);background:var(--green-dim);color:var(--green)}
+    .step-dot.active{border-color:var(--gold);background:var(--gold-dim);color:var(--gold)}
+    .step-label{font-size:12px;color:var(--muted);letter-spacing:.05em}
+    .step-label.active{color:var(--white)}
+    .step-line{flex:1;height:1px;background:var(--border);margin:0 16px;max-width:80px}
+    .step-line.done{background:rgba(76,175,125,0.3)}
+
+    /* KPIs sommaire */
+    .kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:40px;opacity:0;animation:fade-up .7s .2s forwards}
+    .kpi-box{background:var(--ink-2);border:1px solid var(--border);border-radius:8px;padding:18px 20px}
+    .kpi-box-label{font-size:10px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+    .kpi-box-val{font-size:24px;font-weight:300;color:var(--white);line-height:1;margin-bottom:3px}
+    .kpi-box-val.gold{color:var(--gold)}
+    .kpi-box-val.green{color:var(--green)}
+    .kpi-box-val.red{color:var(--red)}
+    .kpi-box-sub{font-size:11px;color:var(--muted)}
+
+    /* Layout deux colonnes */
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+    .full-col{margin-bottom:20px}
+
+    /* Section card */
+    .section-card{background:var(--ink-2);border:1px solid var(--border);border-radius:8px;overflow:hidden;opacity:0;animation:fade-up .7s forwards}
+    .section-card:nth-child(1){animation-delay:.25s}
+    .section-card:nth-child(2){animation-delay:.3s}
+    .section-card:nth-child(3){animation-delay:.35s}
+    .section-card:nth-child(4){animation-delay:.4s}
+    .section-card:nth-child(5){animation-delay:.45s}
+    .s-head{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .s-head-title{font-size:11px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--muted-2)}
+    .s-head-badge{font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:2px}
+    .badge-ok{background:var(--green-dim);color:var(--green);border:1px solid rgba(76,175,125,0.2)}
+    .badge-warn{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(224,164,85,0.2)}
+    .badge-bad{background:var(--red-dim);color:var(--red);border:1px solid rgba(224,85,85,0.2)}
+    .s-body{padding:20px 22px}
+
+    /* Lignes de ratios */
+    .ratio-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+    .ratio-row:last-child{border-bottom:none}
+    .ratio-name{font-size:13px;color:var(--white);flex:1;min-width:0}
+    .ratio-formula{font-size:10px;color:var(--muted);margin-top:2px}
+    .ratio-bar-wrap{flex:1.5;height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;min-width:60px}
+    .ratio-bar{height:100%;border-radius:3px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+    .bar-ok{background:var(--green)}
+    .bar-warn{background:var(--amber)}
+    .bar-bad{background:var(--red)}
+    .ratio-val{font-size:14px;font-weight:400;min-width:58px;text-align:right}
+    .val-ok{color:var(--green)}
+    .val-warn{color:var(--amber)}
+    .val-bad{color:var(--red)}
+    .ratio-badge{font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:2px;min-width:46px;text-align:center}
+
+    /* Graphiques */
+    .chart-wrap{position:relative;width:100%}
+    .chart-h200{height:200px}
+    .chart-h260{height:260px}
+    .chart-h300{height:300px}
+
+    /* Interprétation */
+    .interp{margin-top:14px;padding:14px 16px;background:rgba(255,255,255,0.02);border-radius:6px;border-left:2px solid var(--gold-dim)}
+    .interp-text{font-size:12px;color:var(--muted-2);line-height:1.8}
+    .interp-text strong{color:var(--white);font-weight:400}
+
+    /* No data */
+    .no-data-msg{text-align:center;padding:80px 40px}
+    .no-data-msg .nd-title{font-family:var(--font-display);font-size:28px;font-weight:300;margin-bottom:12px}
+    .no-data-msg .nd-title em{font-style:italic;color:var(--gold)}
+    .no-data-msg p{font-size:13px;color:var(--muted-2);margin-bottom:24px}
+    .btn-goto{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:var(--ink);font-family:var(--font-body);font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;border:none;border-radius:2px;padding:12px 24px;cursor:pointer;text-decoration:none}
+
+    @keyframes fade-up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  </style>
+</head>
+<body>
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-logo">Finqui<span>ty</span></a>
+    <div class="sidebar-section">Workspace</div>
+    <a href="Dashboard.html" class="nav-item">
+      <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="1" width="5" height="5" rx="1"/><rect x="9" y="1" width="5" height="5" rx="1"/><rect x="1" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a href="import.html" class="nav-item">
+      <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M7.5 1v9M4 7l3.5 3.5L11 7"/><path d="M2 11v2h11v-2"/></svg>
+      Import
+    </a>
+    <a href="analysis.html" class="nav-item active">
+      <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M1 11l3-4 3 2 3-5 3 3"/></svg>
+      Analyse
+    </a>
+    <a href="valuation.html" class="nav-item">
+      <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="7.5" cy="7.5" r="5.5"/><path d="M7.5 4v3.5l2.5 1.5"/></svg>
+      Valorisation
+    </a>
+    <a href="simulation.html" class="nav-item">
+      <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2 13l4-6 3 3 4-7"/></svg>
+      Simulation LBO
+    </a>
+    <a href="report.html" class="nav-item">
+      <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="1" width="9" height="13" rx="1"/><path d="M5 5h5M5 8h5M5 11h3"/></svg>
+      Rapport
+    </a>
+    <div class="sidebar-spacer"></div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="user-avatar">U</div>
+      <div class="user-name" id="user-name">—</div>
+    </div>
+  </aside>
+
+  <div class="topbar">
+    <div class="breadcrumb">
+      <span>Workspace</span>
+      <span style="color:var(--muted);padding:0 4px">/</span>
+      <span class="current">Analyse financière</span>
+    </div>
+    <div class="topbar-right">
+      <a href="valuation.html" class="btn-next">
+        Valorisation
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 6h10M6 1l5 5-5 5"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="page-content" id="page-content">
+      <!-- injecté par JS -->
+    </div>
+  </div>
+
+  <script>
+    /* ── Cursor ── */
+    (function(){
+      const cur=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+      let mx=0,my=0,rx=0,ry=0;
+      document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+      (function loop(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;cur.style.left=mx+'px';cur.style.top=my+'px';ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(loop);})();
+      document.querySelectorAll('a,button').forEach(el=>{
+        el.addEventListener('mouseenter',()=>{ring.style.width='48px';ring.style.height='48px';});
+        el.addEventListener('mouseleave',()=>{ring.style.width='32px';ring.style.height='32px';});
+      });
+    })();
+
+    /* ── Session ── */
+    try{const s=JSON.parse(localStorage.getItem('finquity_session')||'{}');if(s.name){document.getElementById('user-name').textContent=s.name;document.getElementById('user-avatar').textContent=s.name[0].toUpperCase();}}catch(_){}
+
+    /* ── Logique principale dans un IIFE (pour que return soit valide) ── */
+    (function main() {
+
+    /* ── Données ── */
+    const d = FinquityParser.getFinancialData();
+    const hasData = Object.values(d).some(v => typeof v === 'number' && v !== 0);
+
+    /* ── Formatage ── */
+    const fmt  = (v,d=0) => (v||0).toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d});
+    const fmtE = v => fmt(v)+' €';
+    const fmtP = (v,d=1) => fmt(v,d)+'%';
+    const fmtX = (v,d=2) => fmt(v,d)+'x';
+
+    /* ── Calcul de tous les ratios ── */
+    const totalActif = d.immob + d.actif_circ + d.treso;
+    const totalPassif = d.cp + d.dette_lt + d.dette_ct;
+    const detteNette  = d.dette_lt - d.treso;
+    const fcf = d.ebitda - (d.capex || 0) - (d.bfr || 0);
+
+    const ratios = {
+      /* Rentabilité */
+      margeEbitda   : d.ca     ? d.ebitda / d.ca * 100      : 0,
+      margeEbit     : d.ca     ? d.ebit   / d.ca * 100      : 0,
+      margeNette    : d.ca     ? d.rn     / d.ca * 100      : 0,
+      roe           : d.cp     ? d.rn     / d.cp * 100      : 0,
+      roa           : totalActif ? d.rn   / totalActif * 100: 0,
+      roce          : (d.cp + d.dette_lt) ? d.ebit / (d.cp + d.dette_lt) * 100 : 0,
+      /* Liquidité */
+      liquiditeGen  : d.dette_ct ? (d.actif_circ + d.treso) / d.dette_ct : 0,
+      liquiditeRed  : d.dette_ct ? (d.actif_circ - 0 + d.treso) / d.dette_ct : 0,
+      liquiditeImm  : d.dette_ct ? d.treso / d.dette_ct : 0,
+      /* Solvabilité */
+      gearing       : d.cp     ? d.dette_lt / d.cp          : 0,
+      autofin       : totalPassif ? d.cp / totalPassif * 100 : 0,
+      couverture    : d.interet ? d.ebitda / d.interet       : 0,
+      levierDette   : d.ebitda  ? detteNette / d.ebitda      : 0,
+      capaciteRemb  : d.ebitda  ? d.dette_lt / d.ebitda      : 0,
+    };
+
+    /* ── Score global (0-100) ── */
+    function score(val, low, high, inverse) {
+      const pct = Math.min(100, Math.max(0, (val - low) / (high - low) * 100));
+      return inverse ? 100 - pct : pct;
+    }
+    const globalScore = Math.round((
+      score(ratios.margeEbitda, 0, 30)     * 2 +
+      score(ratios.roe, 0, 20)             * 2 +
+      score(ratios.liquiditeGen, 0.5, 2.5) * 2 +
+      score(ratios.gearing, 0, 2, true)    * 2 +
+      score(ratios.couverture, 0, 6)       * 2
+    ) / 10);
+
+    /* ── Couleur selon seuils ── */
+    function color(val, low, high, inverse) {
+      if (inverse) {
+        if (val <= low) return 'ok';
+        if (val <= high) return 'warn';
+        return 'bad';
+      }
+      if (val >= high) return 'ok';
+      if (val >= low)  return 'warn';
+      return 'bad';
+    }
+    const C = color;
+
+    /* ── Barre de progression ── */
+    function bar(val, max, cls) {
+      const w = Math.min(100, Math.max(2, val / max * 100)).toFixed(1);
+      return `<div class="ratio-bar-wrap"><div class="ratio-bar bar-${cls}" style="width:${w}%"></div></div>`;
+    }
+
+    /* ── Ligne de ratio ── */
+    function ratioRow(name, formula, val, displayVal, barMax, threshLow, threshHigh, inverse) {
+      const cls = C(val, threshLow, threshHigh, inverse);
+      const label = cls === 'ok' ? 'Bon' : cls === 'warn' ? 'Moyen' : 'Faible';
+      return `<div class="ratio-row">
+        <div>
+          <div class="ratio-name">${name}</div>
+          <div class="ratio-formula">${formula}</div>
+        </div>
+        ${bar(Math.abs(val), barMax, cls)}
+        <div class="ratio-val val-${cls}">${displayVal}</div>
+        <div class="ratio-badge badge-${cls}">${label}</div>
+      </div>`;
+    }
+
+    /* ── Badge global ── */
+    function globalBadge(score) {
+      if (score >= 70) return ['badge-ok','Sain'];
+      if (score >= 45) return ['badge-warn','Vigilance'];
+      return ['badge-bad','Fragilité'];
+    }
+    const [gbClass, gbLabel] = globalBadge(globalScore);
+
+    /* ── Interprétation automatique ── */
+    function interpretation() {
+      const pts = [];
+      if (ratios.margeEbitda < 5)
+        pts.push('La <strong>marge EBITDA est très faible</strong> — les charges d\'exploitation consomment l\'essentiel du CA.');
+      else if (ratios.margeEbitda >= 20)
+        pts.push('La <strong>marge EBITDA est solide</strong> ('+fmtP(ratios.margeEbitda)+'), signe d\'une bonne maîtrise des coûts opérationnels.');
+
+      if (ratios.liquiditeGen < 1)
+        pts.push('La <strong>liquidité générale est inférieure à 1</strong> — les dettes CT dépassent les actifs circulants, risque de tension de trésorerie à court terme.');
+      else if (ratios.liquiditeGen >= 2)
+        pts.push('La <strong>liquidité est confortable</strong> ('+fmtX(ratios.liquiditeGen)+'), l\'entreprise peut faire face à ses engagements à court terme.');
+
+      if (ratios.gearing > 2)
+        pts.push('Le <strong>levier financier est élevé</strong> (Gearing '+fmtX(ratios.gearing)+') — la dette LT représente plus du double des capitaux propres.');
+      else if (ratios.gearing < 0.5)
+        pts.push('L\'<strong>endettement est faible</strong> (Gearing '+fmtX(ratios.gearing)+'), l\'entreprise dispose d\'une capacité d\'endettement significative.');
+
+      if (ratios.couverture < 2 && d.interet > 0)
+        pts.push('La <strong>couverture des intérêts est insuffisante</strong> ('+fmtX(ratios.couverture)+') — l\'EBITDA couvre à peine les charges financières.');
+
+      if (ratios.roe > 15)
+        pts.push('Le <strong>ROE est attractif</strong> ('+fmtP(ratios.roe)+'), la rentabilité pour les actionnaires est élevée.');
+
+      return pts.length ? pts.join(' ') : 'Les indicateurs sont dans des plages normales. Consultez le détail par catégorie ci-dessous.';
+    }
+
+    /* ═══════════════════════════════════════════
+       PAS DE DONNÉES
+    ═══════════════════════════════════════════ */
+    if (!hasData) {
+      document.getElementById('page-content').innerHTML = `
+        <div class="no-data-msg">
+          <div class="nd-title">Aucune <em>donnée</em> disponible</div>
+          <p>Importez d'abord votre bilan ou compte de résultat.</p>
+          <a href="import.html" class="btn-goto">Aller à l'import →</a>
+        </div>`;
+      return;
+    }
+
+    /* ═══════════════════════════════════════════
+       RENDU PRINCIPAL
+    ═══════════════════════════════════════════ */
+    const company = d.meta?.company || 'Entreprise';
+
+    document.getElementById('page-content').innerHTML = `
+
+      <!-- Header -->
+      <div class="page-header">
+        <div class="page-eyebrow">Analyse financière</div>
+        <h1 class="page-title">${company} — <em>ratios & diagnostic</em></h1>
+        <p class="page-sub">Exercice ${d.meta?.year || new Date().getFullYear()} · ${d.meta?.sector || 'Secteur non renseigné'}</p>
+      </div>
+
+      <!-- Steps -->
+      <div class="steps">
+        <div class="step-item"><div class="step-dot done">✓</div><div class="step-label">Import</div></div>
+        <div class="step-line done"></div>
+        <div class="step-item"><div class="step-dot active">2</div><div class="step-label active">Analyse</div></div>
+        <div class="step-line"></div>
+        <div class="step-item"><div class="step-dot">3</div><div class="step-label">Valorisation</div></div>
+        <div class="step-line"></div>
+        <div class="step-item"><div class="step-dot">4</div><div class="step-label">Rapport</div></div>
+      </div>
+
+      <!-- KPIs sommaire -->
+      <div class="kpi-strip">
+        <div class="kpi-box">
+          <div class="kpi-box-label">Chiffre d'affaires</div>
+          <div class="kpi-box-val gold">${d.ca ? fmt(d.ca)+' €' : '—'}</div>
+          <div class="kpi-box-sub">Compte de résultat</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-box-label">EBITDA</div>
+          <div class="kpi-box-val ${d.ebitda >= 0 ? 'green' : 'red'}">${d.ebitda ? fmt(d.ebitda)+' €' : '—'}</div>
+          <div class="kpi-box-sub">${d.ca ? 'Marge '+fmtP(ratios.margeEbitda) : '—'}</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-box-label">Résultat net</div>
+          <div class="kpi-box-val ${d.rn >= 0 ? 'green' : 'red'}">${d.rn !== 0 ? fmt(d.rn)+' €' : '—'}</div>
+          <div class="kpi-box-sub">${d.ca ? 'Marge '+fmtP(ratios.margeNette) : '—'}</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-box-label">Score santé</div>
+          <div class="kpi-box-val ${globalScore >= 70 ? 'green' : globalScore >= 45 ? 'gold' : 'red'}">${globalScore}/100</div>
+          <div class="kpi-box-sub"><span class="ratio-badge ${gbClass}" style="font-size:10px">${gbLabel}</span></div>
+        </div>
+      </div>
+
+      <!-- Interprétation globale -->
+      <div class="full-col">
+        <div class="section-card">
+          <div class="s-head">
+            <div class="s-head-title">Diagnostic global</div>
+            <div class="s-head-badge ${gbClass}">${gbLabel}</div>
+          </div>
+          <div class="s-body">
+            <div class="interp"><div class="interp-text">${interpretation()}</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rentabilité + Liquidité -->
+      <div class="two-col" id="row1">
+        <div class="section-card">
+          <div class="s-head">
+            <div class="s-head-title">Rentabilité</div>
+            <div class="s-head-badge ${C(ratios.margeEbitda,10,20)}">${C(ratios.margeEbitda,10,20)==='ok'?'Bon':C(ratios.margeEbitda,10,20)==='warn'?'Moyen':'Faible'}</div>
+          </div>
+          <div class="s-body">
+            ${ratioRow('Marge EBITDA','EBITDA / CA',ratios.margeEbitda,fmtP(ratios.margeEbitda),50,10,20)}
+            ${ratioRow('Marge EBIT','EBIT / CA',ratios.margeEbit,fmtP(ratios.margeEbit),40,5,15)}
+            ${ratioRow('Marge nette','RN / CA',ratios.margeNette,fmtP(ratios.margeNette),25,3,8)}
+            ${ratioRow('ROE','RN / Cap. propres',ratios.roe,fmtP(ratios.roe),40,8,15)}
+            ${ratioRow('ROA','RN / Total actif',ratios.roa,fmtP(ratios.roa),20,3,7)}
+            ${ratioRow('ROCE','EBIT / Cap. employés',ratios.roce,fmtP(ratios.roce),30,8,15)}
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="s-head">
+            <div class="s-head-title">Liquidité</div>
+            <div class="s-head-badge ${C(ratios.liquiditeGen,1,1.5)}">${C(ratios.liquiditeGen,1,1.5)==='ok'?'Bon':C(ratios.liquiditeGen,1,1.5)==='warn'?'Moyen':'Faible'}</div>
+          </div>
+          <div class="s-body">
+            ${ratioRow('Liquidité générale','(Actif circ. + Tréso) / Dettes CT',ratios.liquiditeGen,fmtX(ratios.liquiditeGen,2),4,1,1.5)}
+            ${ratioRow('Liquidité réduite','(Créances + Tréso) / Dettes CT',ratios.liquiditeRed,fmtX(ratios.liquiditeRed,2),3,0.5,1)}
+            ${ratioRow('Liquidité immédiate','Trésorerie / Dettes CT',ratios.liquiditeImm,fmtX(ratios.liquiditeImm,2),2,0.2,0.5)}
+            <div class="interp" style="margin-top:12px">
+              <div class="interp-text">
+                Trésorerie disponible : <strong>${fmt(d.treso)} €</strong> · 
+                Dettes CT : <strong>${fmt(d.dette_ct)} €</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Solvabilité + structure bilan -->
+      <div class="two-col" id="row2">
+        <div class="section-card">
+          <div class="s-head">
+            <div class="s-head-title">Solvabilité & endettement</div>
+            <div class="s-head-badge ${C(ratios.gearing,0,1.5,true)}">${C(ratios.gearing,0,1.5,true)==='ok'?'Bon':C(ratios.gearing,0,1.5,true)==='warn'?'Moyen':'Faible'}</div>
+          </div>
+          <div class="s-body">
+            ${ratioRow('Gearing (Dettes LT / CP)','Dettes LT / Cap. propres',ratios.gearing,fmtX(ratios.gearing),4,0,1.5,true)}
+            ${ratioRow('Autonomie financière','Cap. propres / Total passif',ratios.autofin,fmtP(ratios.autofin),100,30,50)}
+            ${ratioRow('Couverture des intérêts','EBITDA / Charges fin.',ratios.couverture,fmtX(ratios.couverture,1),12,2,4)}
+            ${ratioRow('Levier dette nette','(Dettes LT - Tréso) / EBITDA',ratios.levierDette,fmtX(ratios.levierDette,1),8,0,3,true)}
+            ${ratioRow('Capacité remboursement','Dettes LT / EBITDA',ratios.capaciteRemb,fmtX(ratios.capaciteRemb,1),8,0,4,true)}
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="s-head"><div class="s-head-title">Structure du bilan</div></div>
+          <div class="s-body">
+            <div class="chart-wrap chart-h260" id="wrap-bilan">
+              <canvas id="chart-bilan" role="img" aria-label="Répartition actif et passif du bilan de ${company}">Actif : immobilisé ${fmt(d.immob)}€, circulant ${fmt(d.actif_circ)}€, trésorerie ${fmt(d.treso)}€. Passif : capitaux propres ${fmt(d.cp)}€, dettes LT ${fmt(d.dette_lt)}€, dettes CT ${fmt(d.dette_ct)}€.</canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Graphiques CA/EBITDA/RN + Répartition charges -->
+      <div class="two-col" id="row3">
+        <div class="section-card">
+          <div class="s-head"><div class="s-head-title">Cascade de résultat</div></div>
+          <div class="s-body">
+            <div class="chart-wrap chart-h300">
+              <canvas id="chart-cascade" role="img" aria-label="Cascade de résultat de ${company} : CA, EBITDA, EBIT, RN">CA : ${fmt(d.ca)}€ · EBITDA : ${fmt(d.ebitda)}€ · EBIT : ${fmt(d.ebit)}€ · RN : ${fmt(d.rn)}€</canvas>
+            </div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="s-head"><div class="s-head-title">Répartition des charges</div></div>
+          <div class="s-body">
+            <div class="chart-wrap chart-h300">
+              <canvas id="chart-charges" role="img" aria-label="Répartition des charges de ${company}">Achats : ${fmt(d.cogs)}€ · Charges exploitation : ${fmt(d.opex)}€ · Amortissements : ${fmt(d.amort)}€ · Charges financières : ${fmt(d.interet)}€ · IS : ${fmt(d.impot)}€</canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tableau récapitulatif -->
+      <div class="full-col">
+        <div class="section-card">
+          <div class="s-head"><div class="s-head-title">Récapitulatif des indicateurs clés</div></div>
+          <div class="s-body" style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:12px">
+              <thead>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.07)">
+                  <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Indicateur</th>
+                  <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Formule</th>
+                  <th style="text-align:right;padding:8px 12px;font-size:10px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Valeur</th>
+                  <th style="text-align:center;padding:8px 12px;font-size:10px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Seuil bas</th>
+                  <th style="text-align:center;padding:8px 12px;font-size:10px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Seuil haut</th>
+                  <th style="text-align:center;padding:8px 12px;font-size:10px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Statut</th>
+                </tr>
+              </thead>
+              <tbody id="recap-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    `;
+
+    /* ═══════════════════════════════════════════
+       TABLEAU RÉCAPITULATIF
+    ═══════════════════════════════════════════ */
+    const recapData = [
+      ['Marge EBITDA',         'EBITDA / CA',                    fmtP(ratios.margeEbitda),  '10%',  '20%',  C(ratios.margeEbitda,10,20)],
+      ['Marge EBIT',           'EBIT / CA',                      fmtP(ratios.margeEbit),    '5%',   '15%',  C(ratios.margeEbit,5,15)],
+      ['Marge nette',          'RN / CA',                        fmtP(ratios.margeNette),   '3%',   '8%',   C(ratios.margeNette,3,8)],
+      ['ROE',                  'RN / Capitaux propres',          fmtP(ratios.roe),          '8%',   '15%',  C(ratios.roe,8,15)],
+      ['ROA',                  'RN / Total actif',               fmtP(ratios.roa),          '3%',   '7%',   C(ratios.roa,3,7)],
+      ['ROCE',                 'EBIT / Cap. employés',           fmtP(ratios.roce),         '8%',   '15%',  C(ratios.roce,8,15)],
+      ['Liquidité générale',   '(Circ.+Tréso) / Dettes CT',     fmtX(ratios.liquiditeGen), '1.0x', '1.5x', C(ratios.liquiditeGen,1,1.5)],
+      ['Liquidité immédiate',  'Trésorerie / Dettes CT',         fmtX(ratios.liquiditeImm), '0.2x', '0.5x', C(ratios.liquiditeImm,0.2,0.5)],
+      ['Gearing',              'Dettes LT / Cap. propres',       fmtX(ratios.gearing),      '—',    '1.5x', C(ratios.gearing,0,1.5,true)],
+      ['Autonomie financière', 'CP / Total passif',              fmtP(ratios.autofin),      '30%',  '50%',  C(ratios.autofin,30,50)],
+      ['Couverture intérêts',  'EBITDA / Charges fin.',          fmtX(ratios.couverture,1), '2x',   '4x',   C(ratios.couverture,2,4)],
+      ['Capacité remb.',       'Dettes LT / EBITDA',             fmtX(ratios.capaciteRemb), '—',    '4x',   C(ratios.capaciteRemb,0,4,true)],
+    ];
+    const tbody = document.getElementById('recap-tbody');
+    recapData.forEach(([name,formula,val,low,high,cls]) => {
+      const label = cls === 'ok' ? 'Bon' : cls === 'warn' ? 'Moyen' : 'Faible';
+      tbody.innerHTML += `<tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
+        <td style="padding:9px 12px;color:var(--white)">${name}</td>
+        <td style="padding:9px 12px;color:var(--muted)">${formula}</td>
+        <td style="padding:9px 12px;text-align:right;font-weight:400" class="val-${cls}">${val}</td>
+        <td style="padding:9px 12px;text-align:center;color:var(--muted)">${low}</td>
+        <td style="padding:9px 12px;text-align:center;color:var(--muted)">${high}</td>
+        <td style="padding:9px 12px;text-align:center"><span class="ratio-badge badge-${cls}">${label}</span></td>
+      </tr>`;
+    });
+
+    /* ═══════════════════════════════════════════
+       GRAPHIQUES
+    ═══════════════════════════════════════════ */
+    const darkBorder = 'rgba(255,255,255,0.06)';
+    const gridColor  = 'rgba(255,255,255,0.05)';
+    const tickColor  = '#6b6b74';
+
+    Chart.defaults.color = tickColor;
+    Chart.defaults.borderColor = gridColor;
+    Chart.defaults.font.family = 'DM Sans, sans-serif';
+    Chart.defaults.font.size   = 11;
+
+    /* Bilan — barre horizontale empilée */
+    new Chart(document.getElementById('chart-bilan'), {
+      type: 'bar',
+      data: {
+        labels: ['Actif', 'Passif'],
+        datasets: [
+          { label:'Immobilisé',      data:[d.immob, 0],       backgroundColor:'#185FA5', borderRadius:0 },
+          { label:'Actif circ.',     data:[d.actif_circ, 0],  backgroundColor:'#378ADD', borderRadius:0 },
+          { label:'Trésorerie',      data:[d.treso, 0],       backgroundColor:'#1D9E75', borderRadius:0 },
+          { label:'Cap. propres',    data:[0, d.cp],          backgroundColor:'#C9A96E', borderRadius:0 },
+          { label:'Dettes LT',       data:[0, d.dette_lt],    backgroundColor:'#D85A30', borderRadius:0 },
+          { label:'Dettes CT',       data:[0, d.dette_ct],    backgroundColor:'#F09595', borderRadius:0 },
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 10, padding: 12, color: tickColor } } },
+        scales: {
+          x: { stacked: true, ticks: { callback: v => (v/1000).toFixed(0)+'k€', color: tickColor }, grid: { color: gridColor }, border: { color: darkBorder } },
+          y: { stacked: true, ticks: { color: tickColor }, grid: { display: false }, border: { color: darkBorder } }
+        }
+      }
+    });
+
+    /* Cascade de résultat */
+    new Chart(document.getElementById('chart-cascade'), {
+      type: 'bar',
+      data: {
+        labels: ['CA', 'EBITDA', 'EBIT', 'Résultat net'],
+        datasets: [{
+          label: 'Valeur (€)',
+          data: [d.ca, d.ebitda, d.ebit, d.rn],
+          backgroundColor: [
+            'rgba(201,169,110,0.7)',
+            d.ebitda >= 0 ? 'rgba(76,175,125,0.7)' : 'rgba(224,85,85,0.7)',
+            d.ebit   >= 0 ? 'rgba(76,175,125,0.5)' : 'rgba(224,85,85,0.5)',
+            d.rn     >= 0 ? 'rgba(76,175,125,0.7)' : 'rgba(224,85,85,0.7)',
+          ],
+          borderColor: [
+            '#C9A96E',
+            d.ebitda >= 0 ? '#4caf7d' : '#e05555',
+            d.ebit   >= 0 ? '#4caf7d' : '#e05555',
+            d.rn     >= 0 ? '#4caf7d' : '#e05555',
+          ],
+          borderWidth: 1, borderRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: tickColor }, grid: { display: false }, border: { color: darkBorder } },
+          y: { ticks: { callback: v => (v>=1000||v<=-1000) ? (v/1000).toFixed(0)+'k€' : v+'€', color: tickColor }, grid: { color: gridColor }, border: { color: darkBorder } }
+        }
+      }
+    });
+
+    /* Répartition des charges — doughnut */
+    const chargesLabels = ['Achats / COGS', 'Charges exploit.', 'Amortissements', 'Charges fin.', 'Impôt sociétés'];
+    const chargesData   = [d.cogs, d.opex, d.amort, d.interet, d.impot].map(v => Math.max(0, v));
+    new Chart(document.getElementById('chart-charges'), {
+      type: 'doughnut',
+      data: {
+        labels: chargesLabels,
+        datasets: [{
+          data: chargesData,
+          backgroundColor: ['#185FA5','#C9A96E','#1D9E75','#D85A30','#534AB7'],
+          borderColor: '#111113', borderWidth: 2,
+          hoverOffset: 6,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '62%',
+        plugins: {
+          legend: { position: 'right', labels: { boxWidth: 10, padding: 14, color: tickColor, font: { size: 11 } } },
+          tooltip: { callbacks: { label: ctx => ' '+ctx.label+' : '+fmt(ctx.raw)+' €' } }
+        }
+      }
+    });
+
+    })(); // fin IIFE main
+  </script>
+</body>
+</html>

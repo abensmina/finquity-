@@ -1,1097 +1,264 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Finquity — Precision. Clarity. Finquity.</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <title>Finquity — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --ink: #0a0a0b;
-      --ink-2: #141416;
-      --ink-3: #1c1c1f;
-      --surface: #111113;
-      --gold: #c9a96e;
-      --gold-light: #e2c99a;
-      --gold-dim: rgba(201,169,110,0.15);
-      --muted: #6b6b74;
-      --muted-2: #9191a0;
-      --border: rgba(255,255,255,0.07);
-      --border-gold: rgba(201,169,110,0.25);
-      --white: #f5f4f0;
-      --font-display: 'Cormorant Garamond', Georgia, serif;
-      --font-body: 'DM Sans', sans-serif;
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      background-color: var(--ink);
-      color: var(--white);
-      font-family: var(--font-body);
-      font-weight: 300;
-      line-height: 1.6;
-      overflow-x: hidden;
-      cursor: none;
-    }
-
-    /* Custom cursor */
-    .cursor {
-      position: fixed;
-      width: 8px; height: 8px;
-      background: var(--gold);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9999;
-      transform: translate(-50%, -50%);
-      transition: transform 0.1s ease, opacity 0.3s;
-      mix-blend-mode: normal;
-    }
-    .cursor-ring {
-      position: fixed;
-      width: 32px; height: 32px;
-      border: 1px solid rgba(201,169,110,0.4);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9998;
-      transform: translate(-50%, -50%);
-      transition: transform 0.18s ease, width 0.2s, height 0.2s, opacity 0.3s;
-    }
-
-    /* Grain overlay */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 1;
-      opacity: 0.4;
-    }
-
-    /* ─── HEADER ─── */
-    header {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 28px 60px;
-      border-bottom: 1px solid transparent;
-      transition: border-color 0.4s, background 0.4s, backdrop-filter 0.4s;
-    }
-    header.scrolled {
-      background: rgba(10,10,11,0.85);
-      backdrop-filter: blur(16px);
-      border-color: var(--border);
-    }
-
-    .logo {
-      font-family: var(--font-display);
-      font-size: 26px;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      color: var(--white);
-      text-decoration: none;
-    }
-    .logo span { color: var(--gold); }
-
-    nav { display: flex; align-items: center; gap: 40px; }
-
-    nav a {
-      font-family: var(--font-body);
-      font-size: 13px;
-      font-weight: 400;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted-2);
-      text-decoration: none;
-      transition: color 0.3s;
-    }
-    nav a:hover { color: var(--white); }
-
-    .nav-cta {
-      font-size: 12px !important;
-      font-weight: 500 !important;
-      letter-spacing: 0.12em !important;
-      color: var(--gold) !important;
-      border: 1px solid var(--border-gold);
-      padding: 9px 22px;
-      border-radius: 2px;
-      transition: background 0.3s, color 0.3s !important;
-    }
-    .nav-cta:hover {
-      background: var(--gold-dim);
-      color: var(--gold-light) !important;
-    }
-
-    /* ─── HERO ─── */
-    .hero {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 160px 60px 100px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero-bg-grid {
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(201,169,110,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(201,169,110,0.03) 1px, transparent 1px);
-      background-size: 80px 80px;
-      z-index: 0;
-    }
-    .hero-bg-glow {
-      position: absolute;
-      top: -200px; right: -100px;
-      width: 700px; height: 700px;
-      background: radial-gradient(circle, rgba(201,169,110,0.06) 0%, transparent 70%);
-      z-index: 0;
-      animation: pulse-glow 8s ease-in-out infinite;
-    }
-    @keyframes pulse-glow {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.6; transform: scale(1.08); }
-    }
-
-    .hero-content { position: relative; z-index: 2; max-width: 760px; }
-
-    .hero-eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 36px;
-      opacity: 0;
-      animation: fade-up 0.8s 0.2s forwards;
-    }
-    .hero-eyebrow::before {
-      content: '';
-      display: block;
-      width: 28px; height: 1px;
-      background: var(--gold);
-    }
-
-    .hero h1 {
-      font-family: var(--font-display);
-      font-size: clamp(52px, 7vw, 88px);
-      font-weight: 300;
-      line-height: 1.05;
-      letter-spacing: -0.01em;
-      color: var(--white);
-      margin-bottom: 30px;
-      opacity: 0;
-      animation: fade-up 0.9s 0.4s forwards;
-    }
-    .hero h1 em {
-      font-style: italic;
-      color: var(--gold);
-    }
-
-    .hero-sub {
-      font-size: 16px;
-      font-weight: 300;
-      color: var(--muted-2);
-      line-height: 1.8;
-      max-width: 480px;
-      margin-bottom: 52px;
-      opacity: 0;
-      animation: fade-up 0.9s 0.6s forwards;
-    }
-
-    .hero-actions {
-      display: flex;
-      align-items: center;
-      gap: 28px;
-      opacity: 0;
-      animation: fade-up 0.9s 0.8s forwards;
-    }
-
-    .btn-primary {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--gold);
-      color: var(--ink);
-      font-family: var(--font-body);
-      font-size: 12px;
-      font-weight: 500;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      text-decoration: none;
-      padding: 16px 32px;
-      border-radius: 2px;
-      transition: background 0.3s, transform 0.2s;
-    }
-    .btn-primary:hover {
-      background: var(--gold-light);
-      transform: translateY(-1px);
-    }
-    .btn-primary svg { transition: transform 0.2s; }
-    .btn-primary:hover svg { transform: translateX(3px); }
-
-    .btn-ghost {
-      font-size: 12px;
-      font-weight: 400;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted-2);
-      text-decoration: none;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 3px;
-      transition: color 0.3s, border-color 0.3s;
-    }
-    .btn-ghost:hover { color: var(--white); border-color: var(--muted-2); }
-
-    /* Hero stats */
-    .hero-stats {
-      position: absolute;
-      bottom: 60px; right: 60px;
-      display: flex;
-      gap: 48px;
-      z-index: 2;
-      opacity: 0;
-      animation: fade-in 1s 1.2s forwards;
-    }
-    .stat { text-align: right; }
-    .stat-value {
-      font-family: var(--font-display);
-      font-size: 36px;
-      font-weight: 300;
-      color: var(--white);
-      letter-spacing: -0.02em;
-      line-height: 1;
-    }
-    .stat-label {
-      font-size: 11px;
-      font-weight: 400;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-top: 6px;
-    }
-
-    @keyframes fade-up {
-      from { opacity: 0; transform: translateY(24px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fade-in {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    /* ─── MARQUEE / TRUST ─── */
-    .trust-bar {
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      padding: 22px 0;
-      overflow: hidden;
-      position: relative;
-    }
-    .trust-bar::before, .trust-bar::after {
-      content: '';
-      position: absolute;
-      top: 0; bottom: 0;
-      width: 120px;
-      z-index: 2;
-    }
-    .trust-bar::before { left: 0; background: linear-gradient(90deg, var(--ink), transparent); }
-    .trust-bar::after { right: 0; background: linear-gradient(-90deg, var(--ink), transparent); }
-
-    .marquee-track {
-      display: flex;
-      gap: 80px;
-      animation: marquee 24s linear infinite;
-      width: max-content;
-    }
-    .marquee-item {
-      font-family: var(--font-display);
-      font-size: 14px;
-      font-weight: 300;
-      letter-spacing: 0.12em;
-      color: var(--muted);
-      text-transform: uppercase;
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 80px;
-    }
-    .marquee-item::after {
-      content: '·';
-      color: var(--gold);
-      font-size: 20px;
-      line-height: 0;
-    }
-    @keyframes marquee {
-      from { transform: translateX(0); }
-      to { transform: translateX(-50%); }
-    }
-
-    /* ─── SECTION BASE ─── */
-    section { position: relative; }
-
-    .section-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 10px;
-      font-weight: 500;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 24px;
-    }
-    .section-label::before {
-      content: '';
-      display: block;
-      width: 20px; height: 1px;
-      background: var(--gold);
-    }
-
-    /* ─── FEATURES ─── */
-    .features {
-      padding: 140px 60px;
-      background: var(--ink-2);
-    }
-
-    .features-header {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 60px;
-      align-items: end;
-      margin-bottom: 80px;
-    }
-
-    .features-title {
-      font-family: var(--font-display);
-      font-size: clamp(36px, 4vw, 52px);
-      font-weight: 300;
-      line-height: 1.1;
-      color: var(--white);
-    }
-    .features-title em { font-style: italic; color: var(--gold); }
-
-    .features-desc {
-      font-size: 15px;
-      font-weight: 300;
-      color: var(--muted-2);
-      line-height: 1.8;
-      align-self: end;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-    }
-
-    .feature-card {
-      background: var(--ink-2);
-      padding: 48px 40px;
-      transition: background 0.3s;
-      position: relative;
-      overflow: hidden;
-    }
-    .feature-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      opacity: 0;
-      transition: opacity 0.4s;
-    }
-    .feature-card:hover { background: var(--ink-3); }
-    .feature-card:hover::before { opacity: 1; }
-
-    .feature-number {
-      font-family: var(--font-display);
-      font-size: 48px;
-      font-weight: 300;
-      color: rgba(201,169,110,0.15);
-      line-height: 1;
-      margin-bottom: 32px;
-      transition: color 0.3s;
-    }
-    .feature-card:hover .feature-number { color: rgba(201,169,110,0.3); }
-
-    .feature-icon {
-      width: 36px; height: 36px;
-      margin-bottom: 20px;
-      color: var(--gold);
-    }
-
-    .feature-card h3 {
-      font-family: var(--font-display);
-      font-size: 22px;
-      font-weight: 400;
-      color: var(--white);
-      margin-bottom: 14px;
-      letter-spacing: 0.01em;
-    }
-
-    .feature-card p {
-      font-size: 14px;
-      font-weight: 300;
-      color: var(--muted-2);
-      line-height: 1.8;
-    }
-
-    /* ─── HOW IT WORKS ─── */
-    .how {
-      padding: 140px 60px;
-      background: var(--ink);
-    }
-
-    .how-inner {
-      display: grid;
-      grid-template-columns: 300px 1fr;
-      gap: 100px;
-      align-items: start;
-    }
-
-    .how-left { position: sticky; top: 120px; }
-    .how-left h2 {
-      font-family: var(--font-display);
-      font-size: clamp(36px, 4vw, 50px);
-      font-weight: 300;
-      line-height: 1.1;
-      color: var(--white);
-      margin-bottom: 20px;
-    }
-    .how-left h2 em { font-style: italic; color: var(--gold); }
-    .how-left p {
-      font-size: 14px;
-      font-weight: 300;
-      color: var(--muted);
-      line-height: 1.8;
-    }
-
-    .how-steps { display: flex; flex-direction: column; gap: 0; }
-
-    .step {
-      display: grid;
-      grid-template-columns: 80px 1fr;
-      gap: 32px;
-      padding: 48px 0;
-      border-bottom: 1px solid var(--border);
-      transition: padding-left 0.3s;
-    }
-    .step:first-child { border-top: 1px solid var(--border); }
-    .step:hover { padding-left: 8px; }
-
-    .step-num {
-      font-family: var(--font-display);
-      font-size: 13px;
-      font-weight: 300;
-      color: var(--gold);
-      letter-spacing: 0.1em;
-      padding-top: 6px;
-    }
-
-    .step h3 {
-      font-family: var(--font-display);
-      font-size: 26px;
-      font-weight: 400;
-      color: var(--white);
-      margin-bottom: 12px;
-    }
-
-    .step p {
-      font-size: 14px;
-      font-weight: 300;
-      color: var(--muted-2);
-      line-height: 1.8;
-    }
-
-    /* ─── METRICS TICKER ─── */
-    .metrics {
-      padding: 100px 60px;
-      background: var(--ink-2);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-    }
-    .metric-item {
-      background: var(--ink-2);
-      padding: 52px 40px;
-      text-align: center;
-    }
-    .metric-value {
-      font-family: var(--font-display);
-      font-size: 56px;
-      font-weight: 300;
-      color: var(--white);
-      letter-spacing: -0.03em;
-      line-height: 1;
-      margin-bottom: 10px;
-    }
-    .metric-value span { color: var(--gold); }
-    .metric-label {
-      font-size: 11px;
-      font-weight: 400;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    /* ─── WAITLIST ─── */
-    .waitlist {
-      padding: 160px 60px;
-      background: var(--ink);
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .waitlist-glow {
-      position: absolute;
-      bottom: -200px; left: 50%;
-      transform: translateX(-50%);
-      width: 800px; height: 600px;
-      background: radial-gradient(circle, rgba(201,169,110,0.05) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .waitlist-inner { position: relative; z-index: 2; max-width: 560px; margin: 0 auto; }
-
-    .waitlist h2 {
-      font-family: var(--font-display);
-      font-size: clamp(40px, 5vw, 64px);
-      font-weight: 300;
-      line-height: 1.1;
-      color: var(--white);
-      margin-bottom: 20px;
-    }
-    .waitlist h2 em { font-style: italic; color: var(--gold); }
-
-    .waitlist p {
-      font-size: 15px;
-      font-weight: 300;
-      color: var(--muted-2);
-      margin-bottom: 48px;
-      line-height: 1.8;
-    }
-
-    .waitlist-form {
-      display: flex;
-      gap: 0;
-      max-width: 440px;
-      margin: 0 auto 20px;
-      border: 1px solid var(--border-gold);
-      border-radius: 2px;
-      overflow: hidden;
-      transition: border-color 0.3s;
-    }
-    .waitlist-form:focus-within { border-color: var(--gold); }
-
-    .waitlist-form input {
-      flex: 1;
-      background: rgba(201,169,110,0.04);
-      border: none;
-      outline: none;
-      padding: 16px 20px;
-      font-family: var(--font-body);
-      font-size: 14px;
-      font-weight: 300;
-      color: var(--white);
-    }
-    .waitlist-form input::placeholder { color: var(--muted); }
-
-    .waitlist-form button {
-      background: var(--gold);
-      color: var(--ink);
-      border: none;
-      padding: 16px 28px;
-      font-family: var(--font-body);
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: background 0.3s;
-      white-space: nowrap;
-    }
-    .waitlist-form button:hover { background: var(--gold-light); }
-
-    .waitlist-note {
-      font-size: 12px;
-      color: var(--muted);
-      letter-spacing: 0.05em;
-    }
-
-    /* ─── LOGIN PAGE ─── */
-    .login-page {
-      display: none;
-      min-height: 100vh;
-      background: var(--ink);
-      align-items: center;
-      justify-content: center;
-      padding: 80px 20px;
-    }
-    .login-page.active { display: flex; }
-
-    .login-panel {
-      width: 100%;
-      max-width: 420px;
-      border: 1px solid var(--border);
-      padding: 56px 48px;
-      background: var(--ink-2);
-      position: relative;
-    }
-    .login-panel::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 40px; right: 40px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
-    }
-
-    .login-logo {
-      font-family: var(--font-display);
-      font-size: 28px;
-      font-weight: 600;
-      color: var(--white);
-      text-align: center;
-      margin-bottom: 8px;
-    }
-    .login-logo span { color: var(--gold); }
-
-    .login-tagline {
-      font-size: 12px;
-      font-weight: 300;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--muted);
-      text-align: center;
-      margin-bottom: 48px;
-    }
-
-    .login-form { display: flex; flex-direction: column; gap: 20px; }
-
-    .form-group { display: flex; flex-direction: column; gap: 8px; }
-
-    .form-group label {
-      font-size: 10px;
-      font-weight: 500;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--muted-2);
-    }
-
-    .form-group input {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border);
-      border-radius: 2px;
-      padding: 14px 16px;
-      font-family: var(--font-body);
-      font-size: 14px;
-      font-weight: 300;
-      color: var(--white);
-      outline: none;
-      transition: border-color 0.3s;
-    }
-    .form-group input:focus { border-color: var(--gold); }
-    .form-group input::placeholder { color: var(--muted); }
-
-    .login-submit {
-      background: var(--gold);
-      color: var(--ink);
-      border: none;
-      border-radius: 2px;
-      padding: 15px;
-      font-family: var(--font-body);
-      font-size: 12px;
-      font-weight: 500;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: background 0.3s;
-      margin-top: 8px;
-    }
-    .login-submit:hover { background: var(--gold-light); }
-
-    .login-footer {
-      text-align: center;
-      margin-top: 24px;
-      font-size: 13px;
-      font-weight: 300;
-      color: var(--muted);
-    }
-    .login-footer a {
-      color: var(--gold);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-    .login-footer a:hover { color: var(--gold-light); }
-
-    /* ─── LANDING wrapper ─── */
-    #landing { display: block; }
-
-    /* ─── FOOTER ─── */
-    footer {
-      background: var(--ink-2);
-      border-top: 1px solid var(--border);
-      padding: 60px;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      align-items: center;
-      gap: 40px;
-    }
-
-    .footer-logo {
-      font-family: var(--font-display);
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--white);
-      margin-bottom: 10px;
-    }
-    .footer-logo span { color: var(--gold); }
-    .footer-copy {
-      font-size: 12px;
-      font-weight: 300;
-      color: var(--muted);
-      letter-spacing: 0.05em;
-    }
-
-    .footer-links {
-      display: flex;
-      gap: 36px;
-    }
-    .footer-links a {
-      font-size: 12px;
-      font-weight: 400;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      text-decoration: none;
-      transition: color 0.3s;
-    }
-    .footer-links a:hover { color: var(--gold); }
-
-    /* ─── SCROLL REVEAL ─── */
-    .reveal {
-      opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 0.8s ease, transform 0.8s ease;
-    }
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* ─── RESPONSIVE ─── */
-    @media (max-width: 900px) {
-      header { padding: 24px 30px; }
-      .hero { padding: 120px 30px 80px; }
-      .hero-stats { display: none; }
-      .features, .how, .metrics, .waitlist { padding: 80px 30px; }
-      footer { padding: 40px 30px; grid-template-columns: 1fr; }
-      .features-header { grid-template-columns: 1fr; gap: 30px; }
-      .features-grid { grid-template-columns: 1fr; }
-      .how-inner { grid-template-columns: 1fr; gap: 40px; }
-      .how-left { position: static; }
-      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
-      nav .nav-desktop { display: none; }
-    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--ink:#0a0a0b;--ink-2:#111113;--ink-3:#1c1c1f;--gold:#c9a96e;--gold-light:#e2c99a;--gold-dim:rgba(201,169,110,0.12);--gold-dim2:rgba(201,169,110,0.06);--muted:#6b6b74;--muted-2:#9191a0;--border:rgba(255,255,255,0.07);--border-gold:rgba(201,169,110,0.25);--white:#f5f4f0;--success:#4caf7d;--success-dim:rgba(76,175,125,0.12);--font-display:'Cormorant Garamond',Georgia,serif;--font-body:'DM Sans',sans-serif}
+    body{background:var(--ink);color:var(--white);font-family:var(--font-body);font-weight:300;min-height:100vh;display:flex;flex-direction:column;cursor:none}
+    .cursor{position:fixed;width:8px;height:8px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .1s}
+    .cursor-ring{position:fixed;width:32px;height:32px;border:1px solid rgba(201,169,110,0.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform .18s,width .2s,height .2s}
+    .sidebar{position:fixed;top:0;left:0;bottom:0;width:220px;background:var(--ink-2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:32px 0;z-index:50}
+    .sidebar-logo{font-family:var(--font-display);font-size:22px;font-weight:600;color:var(--white);padding:0 28px;margin-bottom:48px;text-decoration:none;letter-spacing:.03em}
+    .sidebar-logo span{color:var(--gold)}
+    .sidebar-section{font-size:10px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);padding:0 28px;margin-bottom:10px}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:11px 28px;font-size:13px;color:var(--muted-2);text-decoration:none;transition:color .2s,background .2s;border-left:2px solid transparent}
+    .nav-item:hover{color:var(--white);background:rgba(255,255,255,0.03)}
+    .nav-item.active{color:var(--gold);background:var(--gold-dim2);border-left-color:var(--gold)}
+    .nav-item svg{width:15px;height:15px;flex-shrink:0}
+    .sidebar-spacer{flex:1}
+    .sidebar-user{margin:0 16px;padding:14px 16px;border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;gap:10px}
+    .user-avatar{width:28px;height:28px;border-radius:50%;background:var(--gold-dim);border:1px solid var(--border-gold);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:13px;color:var(--gold)}
+    .user-name{font-size:12px;color:var(--muted-2)}
+    .topbar{position:fixed;top:0;left:220px;right:0;height:64px;background:rgba(10,10,11,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 48px;z-index:40}
+    .topbar-left{display:flex;flex-direction:column;gap:2px}
+    .topbar-title{font-size:14px;font-weight:400;color:var(--white)}
+    .topbar-sub{font-size:11px;color:var(--muted)}
+    .topbar-right{display:flex;align-items:center;gap:12px}
+    .btn-import{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:var(--ink);font-family:var(--font-body);font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;border:none;border-radius:2px;padding:10px 20px;cursor:pointer;text-decoration:none;transition:background .2s}
+    .btn-import:hover{background:var(--gold-light)}
+    .main{margin-left:220px;padding-top:64px;flex:1}
+    .page-content{padding:52px 48px}
+
+    /* Header entreprise */
+    .company-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:48px;opacity:0;animation:fade-up .7s .1s forwards}
+    .company-name{font-family:var(--font-display);font-size:42px;font-weight:300;color:var(--white);line-height:1}
+    .company-name em{font-style:italic;color:var(--gold)}
+    .company-meta{font-size:12px;color:var(--muted);margin-top:6px}
+    .company-meta span{color:var(--muted-2)}
+    .last-update{font-size:11px;color:var(--muted);text-align:right}
+
+    /* KPIs */
+    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:40px;opacity:0;animation:fade-up .7s .2s forwards}
+    .kpi-card{background:var(--ink-2);border:1px solid var(--border);border-radius:8px;padding:20px 22px}
+    .kpi-label{font-size:10px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+    .kpi-val{font-size:26px;font-weight:300;color:var(--white);line-height:1;margin-bottom:4px}
+    .kpi-val.gold{color:var(--gold)}
+    .kpi-val.green{color:var(--success)}
+    .kpi-sub{font-size:11px;color:var(--muted)}
+
+    /* Navigation modules */
+    .modules-title{font-size:10px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+    .modules-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;opacity:0;animation:fade-up .7s .3s forwards}
+    .module-card{background:var(--ink-2);border:1px solid var(--border);border-radius:8px;padding:28px;text-decoration:none;transition:border-color .2s,background .2s;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden}
+    .module-card:hover{border-color:var(--border-gold);background:var(--gold-dim2)}
+    .module-card:hover .module-arrow{opacity:1;transform:translateX(0)}
+    .module-icon{width:40px;height:40px;border-radius:6px;background:var(--gold-dim);border:1px solid var(--border-gold);display:flex;align-items:center;justify-content:center}
+    .module-icon svg{width:18px;height:18px;color:var(--gold)}
+    .module-name{font-family:var(--font-display);font-size:22px;font-weight:400;color:var(--white)}
+    .module-desc{font-size:12px;font-weight:300;color:var(--muted-2);line-height:1.7}
+    .module-arrow{position:absolute;top:28px;right:28px;font-size:20px;color:var(--gold);opacity:0;transform:translateX(-6px);transition:opacity .2s,transform .2s}
+    .module-status{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:2px}
+    .status-ready{background:var(--success-dim);color:var(--success);border:1px solid rgba(76,175,125,0.2)}
+    .status-pending{background:rgba(255,255,255,0.04);color:var(--muted);border:1px solid var(--border)}
+
+    /* No data state */
+    .no-data{text-align:center;padding:80px 40px;opacity:0;animation:fade-up .7s .1s forwards}
+    .no-data-title{font-family:var(--font-display);font-size:32px;font-weight:300;color:var(--white);margin-bottom:12px}
+    .no-data-title em{font-style:italic;color:var(--gold)}
+    .no-data-sub{font-size:14px;color:var(--muted-2);line-height:1.7;margin-bottom:32px}
+
+    @keyframes fade-up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
   </style>
 </head>
 <body>
-
   <div class="cursor" id="cursor"></div>
   <div class="cursor-ring" id="cursorRing"></div>
 
-  <!-- ─── HEADER ─── -->
-  <header id="header">
-    <a href="index.html" class="logo">Finqui<span>ty</span></a>
-    <nav>
-      <a href="#features" class="nav-desktop">Platform</a>
-      <a href="#how" class="nav-desktop">How it works</a>
-      <a href="#waitlist" class="nav-desktop">Early Access</a>
-      <a href="login.html" class="nav-cta">Sign In</a>
-    </nav>
-  </header>
-
-  <!-- ─── LANDING ─── -->
-  <div id="landing">
-
-    <!-- HERO -->
-    <section class="hero">
-      <div class="hero-bg-grid"></div>
-      <div class="hero-bg-glow"></div>
-      <div class="hero-content">
-        <div class="hero-eyebrow">Financial Intelligence Platform</div>
-        <h1>Precision.<br>Clarity.<br><em>Finquity.</em></h1>
-        <p class="hero-sub">Institutional-grade financial analysis, valuation modelling and scenario simulation — built for SMEs and private investors.</p>
-        <div class="hero-actions">
-          <a href="#waitlist" class="btn-primary">
-            Request Access
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M1 7h12M7 1l6 6-6 6"/>
-            </svg>
-          </a>
-          <a href="#how" class="btn-ghost">See how it works</a>
-        </div>
-      </div>
-      <div class="hero-stats">
-        <div class="stat">
-          <div class="stat-value">DCF</div>
-          <div class="stat-label">Valuation engine</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value">LBO</div>
-          <div class="stat-label">Simulation</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value">PDF</div>
-          <div class="stat-label">Auto reports</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- TRUST MARQUEE -->
-    <div class="trust-bar">
-      <div class="marquee-track">
-        <div class="marquee-item">Financial Analysis</div>
-        <div class="marquee-item">DCF Valuation</div>
-        <div class="marquee-item">LBO Simulation</div>
-        <div class="marquee-item">Market Multiples</div>
-        <div class="marquee-item">Liquidity Ratios</div>
-        <div class="marquee-item">Profitability Ratios</div>
-        <div class="marquee-item">Automated Reporting</div>
-        <div class="marquee-item">SME Intelligence</div>
-        <!-- duplicate for seamless loop -->
-        <div class="marquee-item">Financial Analysis</div>
-        <div class="marquee-item">DCF Valuation</div>
-        <div class="marquee-item">LBO Simulation</div>
-        <div class="marquee-item">Market Multiples</div>
-        <div class="marquee-item">Liquidity Ratios</div>
-        <div class="marquee-item">Profitability Ratios</div>
-        <div class="marquee-item">Automated Reporting</div>
-        <div class="marquee-item">SME Intelligence</div>
-      </div>
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-logo">Finqui<span>ty</span></a>
+    <div class="sidebar-section">Workspace</div>
+    <a href="Dashboard.html" class="nav-item active">
+      <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="1" width="5" height="5" rx="1"/><rect x="9" y="1" width="5" height="5" rx="1"/><rect x="1" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a href="import.html" class="nav-item">
+      <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M7.5 1v9M4 7l3.5 3.5L11 7"/><path d="M2 11v2h11v-2"/></svg>
+      Import
+    </a>
+    <a href="analysis.html" class="nav-item">
+      <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M1 11l3-4 3 2 3-5 3 3"/></svg>
+      Analyse
+    </a>
+    <a href="valuation.html" class="nav-item">
+      <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="7.5" cy="7.5" r="5.5"/><path d="M7.5 4v3.5l2.5 1.5"/></svg>
+      Valorisation
+    </a>
+    <a href="simulation.html" class="nav-item">
+      <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2 13l4-6 3 3 4-7"/></svg>
+      Simulation LBO
+    </a>
+    <a href="report.html" class="nav-item">
+      <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="1" width="9" height="13" rx="1"/><path d="M5 5h5M5 8h5M5 11h3"/></svg>
+      Rapport
+    </a>
+    <div class="sidebar-spacer"></div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="user-avatar">U</div>
+      <div class="user-name" id="user-name">—</div>
     </div>
+  </aside>
 
-    <!-- FEATURES -->
-    <section class="features" id="features">
-      <div class="features-header reveal">
-        <div>
-          <div class="section-label">Platform</div>
-          <h2 class="features-title">Everything you need to<br><em>assess, value & decide</em></h2>
-        </div>
-        <p class="features-desc">A complete toolkit for financial professionals and business owners who need clarity without the complexity of institutional software.</p>
-      </div>
-      <div class="features-grid reveal">
-        <div class="feature-card">
-          <div class="feature-number">01</div>
-          <svg class="feature-icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.2">
-            <rect x="4" y="8" width="28" height="20" rx="2"/>
-            <path d="M10 20l4-6 4 4 4-8 4 4"/>
-          </svg>
-          <h3>Financial Analysis</h3>
-          <p>Import balance sheets and income statements. Get instant diagnostic across liquidity, profitability, leverage and operational efficiency ratios.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-number">02</div>
-          <svg class="feature-icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.2">
-            <circle cx="18" cy="18" r="12"/>
-            <path d="M18 8v10l6 4"/>
-          </svg>
-          <h3>DCF Valuation</h3>
-          <p>Project free cash flows, compute WACC, derive terminal value and produce a full discounted cash flow model in minutes, not hours.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-number">03</div>
-          <svg class="feature-icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.2">
-            <path d="M6 28V14l8-6 8 6v14"/>
-            <path d="M14 28v-8h8v8"/>
-            <path d="M26 12l4 4"/>
-          </svg>
-          <h3>Market Multiples</h3>
-          <p>Benchmark your company against comparable transactions using EV/EBITDA, EV/Revenue and P/E multiples from relevant market data.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-number">04</div>
-          <svg class="feature-icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.2">
-            <rect x="6" y="6" width="10" height="10" rx="1"/>
-            <rect x="20" y="6" width="10" height="10" rx="1"/>
-            <rect x="6" y="20" width="10" height="10" rx="1"/>
-            <rect x="20" y="20" width="10" height="10" rx="1"/>
-          </svg>
-          <h3>LBO Simulation</h3>
-          <p>Model leveraged buyout scenarios, stress-test financing structures and compute internal rate of return across multiple exit assumptions.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-number">05</div>
-          <svg class="feature-icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.2">
-            <path d="M10 6h16v24H10z"/>
-            <path d="M14 12h8M14 17h8M14 22h5"/>
-          </svg>
-          <h3>Automated Reports</h3>
-          <p>Generate professional PDF reports with branded cover pages, executive summaries, charts and AI-generated financial interpretations.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-number">06</div>
-          <svg class="feature-icon" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.2">
-            <path d="M18 4l14 8v12L18 32 4 24V12z"/>
-            <path d="M18 4v28M4 12l14 8 14-8"/>
-          </svg>
-          <h3>Secure Dashboard</h3>
-          <p>Track all your analyses in one place. Store, compare and share financial reports securely across your team or with external advisors.</p>
-        </div>
-      </div>
-    </section>
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-sub" id="topbar-sub">Chargement…</div>
+    </div>
+    <div class="topbar-right">
+      <a href="import.html" class="btn-import">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v7M3 5l3 3 3-3"/><path d="M1 9v2h10V9"/></svg>
+        Nouveau fichier
+      </a>
+    </div>
+  </div>
 
-    <!-- HOW IT WORKS -->
-    <section class="how" id="how">
-      <div class="how-inner">
-        <div class="how-left reveal">
-          <div class="section-label">Process</div>
-          <h2>How <em>Finquity</em> works</h2>
-          <p>From raw financial data to a board-ready report in three structured steps.</p>
-        </div>
-        <div class="how-steps">
-          <div class="step reveal">
-            <div class="step-num">01 /</div>
-            <div>
-              <h3>Import your data</h3>
-              <p>Upload balance sheets, income statements or cash flow data via CSV, Excel or direct input. Finquity structures and validates everything automatically.</p>
-            </div>
-          </div>
-          <div class="step reveal">
-            <div class="step-num">02 /</div>
-            <div>
-              <h3>Run your analysis</h3>
-              <p>Select from financial ratio analysis, DCF valuation, comparable multiples or LBO simulation. Adjust assumptions and run scenarios in real time.</p>
-            </div>
-          </div>
-          <div class="step reveal">
-            <div class="step-num">03 /</div>
-            <div>
-              <h3>Export your report</h3>
-              <p>Download a professional PDF report with your branding, complete with charts, interpreted ratios and executive-level synthesis ready to share.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- METRICS -->
-    <section class="metrics">
-      <div class="metrics-grid reveal">
-        <div class="metric-item">
-          <div class="metric-value">8<span>+</span></div>
-          <div class="metric-label">Financial ratios</div>
-        </div>
-        <div class="metric-item">
-          <div class="metric-value">3<span>×</span></div>
-          <div class="metric-label">Valuation methods</div>
-        </div>
-        <div class="metric-item">
-          <div class="metric-value">1<span>'</span></div>
-          <div class="metric-label">To generate a report</div>
-        </div>
-        <div class="metric-item">
-          <div class="metric-value">100<span>%</span></div>
-          <div class="metric-label">Automated analysis</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- WAITLIST -->
-    <section class="waitlist" id="waitlist">
-      <div class="waitlist-glow"></div>
-      <div class="waitlist-inner reveal">
-        <div class="section-label" style="justify-content:center;margin-bottom:24px">Early Access</div>
-        <h2>Stay ahead in<br><em>private finance</em></h2>
-        <p>Join the waiting list and be among the first to access Finquity when we launch.</p>
-        <div class="waitlist-form">
-          <input type="email" placeholder="your@email.com" />
-          <button type="button">Request Access</button>
-        </div>
-        <p class="waitlist-note">No spam. No obligations. Unsubscribe anytime.</p>
-      </div>
-    </section>
-
-    <!-- FOOTER -->
-    <footer>
-      <div>
-        <div class="footer-logo">Finqui<span>ty</span></div>
-        <p class="footer-copy">&copy; 2025 Finquity — All rights reserved.</p>
-      </div>
-      <div class="footer-links">
-        <a href="#">Platform</a>
-        <a href="#">Privacy</a>
-        <a href="#">Contact</a>
-      </div>
-    </footer>
-
-  </div><!-- end #landing -->
-
-
+  <div class="main">
+    <div class="page-content" id="page-content">
+      <!-- contenu injecté par JS -->
+    </div>
+  </div>
 
   <script>
-    // Custom cursor
-    const cursor = document.getElementById('cursor');
-    const ring = document.getElementById('cursorRing');
-    let mx = 0, my = 0, rx = 0, ry = 0;
-    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
-    (function loop() {
-      rx += (mx - rx) * 0.12;
-      ry += (my - ry) * 0.12;
-      cursor.style.left = mx + 'px';
-      cursor.style.top = my + 'px';
-      ring.style.left = rx + 'px';
-      ring.style.top = ry + 'px';
-      requestAnimationFrame(loop);
-    })();
-    document.querySelectorAll('a, button, input').forEach(el => {
-      el.addEventListener('mouseenter', () => {
-        ring.style.width = '48px'; ring.style.height = '48px';
-        cursor.style.transform = 'translate(-50%,-50%) scale(1.5)';
-      });
-      el.addEventListener('mouseleave', () => {
-        ring.style.width = '32px'; ring.style.height = '32px';
-        cursor.style.transform = 'translate(-50%,-50%) scale(1)';
-      });
-    });
+    /* ── Cursor ── */
+    const cur=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+    (function loop(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;cur.style.left=mx+'px';cur.style.top=my+'px';ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(loop);})();
 
-    // Scroll header
-    const header = document.getElementById('header');
-    window.addEventListener('scroll', () => {
-      header.classList.toggle('scrolled', window.scrollY > 40);
-    });
+    /* ── Session + données ── */
+    let session={}, store={};
+    try{session=JSON.parse(localStorage.getItem('finquity_session')||'{}');}catch(_){}
+    try{store=JSON.parse(localStorage.getItem('finquity_data')||'{}');}catch(_){}
 
-    // Scroll reveal
-    const reveals = document.querySelectorAll('.reveal');
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((e, i) => {
-        if (e.isIntersecting) {
-          setTimeout(() => e.target.classList.add('visible'), i * 80);
-          observer.unobserve(e.target);
-        }
+    const hasData = store.bilan || store.cr;
+
+    // Afficher infos session
+    if(session.name){
+      document.getElementById('user-name').textContent=session.name;
+      document.getElementById('user-avatar').textContent=session.name[0].toUpperCase();
+    }
+
+    const fmt = v => (v||0).toLocaleString('fr-FR',{maximumFractionDigits:0})+' €';
+    const pct = v => (v||0).toFixed(1)+'%';
+
+    if(!hasData){
+      // ── PAS DE DONNÉES : invitation à importer ──
+      document.getElementById('topbar-sub').textContent='Aucune donnée importée';
+      document.getElementById('page-content').innerHTML=`
+        <div class="no-data">
+          <div class="no-data-title">Bienvenue<br><em>${session.name||'sur Finquity'}</em></div>
+          <p class="no-data-sub">Importez votre bilan ou compte de résultat<br>pour commencer l'analyse financière.</p>
+          <a href="import.html" class="btn-import" style="display:inline-flex;font-size:13px;padding:13px 28px">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 1v9M4 7l3 3 3-3"/><path d="M1 11v2h12v-2"/></svg>
+            Importer mes données
+          </a>
+        </div>`;
+    } else {
+      // ── DONNÉES PRÉSENTES : hub complet ──
+      const b = store.bilan?.fields || {};
+      const c = store.cr?.fields    || {};
+      const meta = store.meta || {};
+      const company = meta.company || 'Entreprise';
+      const lastUpdate = store.bilan?.parsedAt || store.cr?.parsedAt || '';
+      const dateStr = lastUpdate ? new Date(lastUpdate).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}) : '—';
+
+      document.getElementById('topbar-title').textContent = company;
+      document.getElementById('topbar-sub').textContent = 'Dernière import : ' + dateStr;
+
+      // Calculs rapides
+      const ebitda = c.ebitda || 0;
+      const ca     = c.ca     || 0;
+      const rn     = c.rn     || 0;
+      const margeE = ca ? ebitda/ca*100 : 0;
+      const totalActif = (b.immob||0)+(b.actif_circ||0)+(b.treso||0);
+      const gearing = b.cp ? (b.dette_lt||0)/b.cp : 0;
+
+      const hasBilan = !!store.bilan;
+      const hasCR    = !!store.cr;
+
+      document.getElementById('page-content').innerHTML=`
+        <div class="company-header">
+          <div>
+            <div class="company-name">${company.split(' ')[0]}<br><em>${company.split(' ').slice(1).join(' ')||'&nbsp;'}</em></div>
+            <div class="company-meta">Exercice <span>${meta.year||new Date().getFullYear()}</span> · ${meta.sector||'Secteur non renseigné'}</div>
+          </div>
+          <div class="last-update">Données importées<br>${dateStr}</div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Chiffre d'affaires</div>
+            <div class="kpi-val gold">${ca?fmt(ca):'—'}</div>
+            <div class="kpi-sub">${hasCR?'Compte de résultat':'Non importé'}</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">EBITDA</div>
+            <div class="kpi-val ${ebitda>=0?'green':''}">${ebitda?fmt(ebitda):'—'}</div>
+            <div class="kpi-sub">${ca?'Marge '+pct(margeE):'—'}</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Total actif</div>
+            <div class="kpi-val">${totalActif?fmt(totalActif):'—'}</div>
+            <div class="kpi-sub">${hasBilan?'Bilan':'Non importé'}</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Gearing (D/CP)</div>
+            <div class="kpi-val">${b.cp?gearing.toFixed(2)+'x':'—'}</div>
+            <div class="kpi-sub">${b.dette_lt?fmt(b.dette_lt)+' dettes LT':'—'}</div>
+          </div>
+        </div>
+
+        <div class="modules-title">Modules d'analyse</div>
+        <div class="modules-grid">
+          <a href="analysis.html" class="module-card">
+            <div class="module-icon"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1 13l4-5 3 2.5 4-6 4 3.5"/></svg></div>
+            <div class="module-name">Analyse financière</div>
+            <p class="module-desc">Ratios de rentabilité, liquidité, solvabilité. Visualisation avec code couleur.</p>
+            <div class="module-status ${hasBilan||hasCR?'status-ready':'status-pending'}">${hasBilan||hasCR?'Données disponibles':'En attente'}</div>
+            <div class="module-arrow">→</div>
+          </a>
+          <a href="valuation.html" class="module-card">
+            <div class="module-icon"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="9" cy="9" r="7"/><path d="M9 5v4.5l3 1.5"/></svg></div>
+            <div class="module-name">Valorisation</div>
+            <p class="module-desc">DCF avec hypothèses paramétrables. Multiples EV/EBITDA, EV/CA. Fourchette de valorisation.</p>
+            <div class="module-status ${hasCR?'status-ready':'status-pending'}">${hasCR?'CR disponible':'Nécessite le CR'}</div>
+            <div class="module-arrow">→</div>
+          </a>
+          <a href="simulation.html" class="module-card">
+            <div class="module-icon"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M2 15l5-7 3.5 3.5 5-8"/></svg></div>
+            <div class="module-name">Simulation LBO</div>
+            <p class="module-desc">Structure de dette, TRI investisseur, MOIC. Tableau d'amortissement complet.</p>
+            <div class="module-status ${hasCR?'status-ready':'status-pending'}">${hasCR?'CR disponible':'Nécessite le CR'}</div>
+            <div class="module-arrow">→</div>
+          </a>
+          <a href="report.html" class="module-card">
+            <div class="module-icon"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="1" width="12" height="16" rx="1.5"/><path d="M6 6h6M6 9.5h6M6 13h4"/></svg></div>
+            <div class="module-name">Rapport PDF</div>
+            <p class="module-desc">Synthèse complète avec graphiques, ratios, valorisation et recommandations.</p>
+            <div class="module-status status-pending">Bientôt disponible</div>
+            <div class="module-arrow">→</div>
+          </a>
+        </div>`;
+
+      // Ajouter le hover cursor sur les nouvelles cartes
+      document.querySelectorAll('.module-card').forEach(el=>{
+        el.addEventListener('mouseenter',()=>{ring.style.width='48px';ring.style.height='48px';});
+        el.addEventListener('mouseleave',()=>{ring.style.width='32px';ring.style.height='32px';});
       });
-    }, { threshold: 0.12 });
-    reveals.forEach(r => observer.observe(r));
-
-    // Login / Landing toggle — removed, Sign In now redirects to login.html
+    }
   </script>
 </body>
 </html>
