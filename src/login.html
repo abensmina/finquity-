@@ -92,8 +92,8 @@
     <div class="right">
       <div class="form-wrap">
         <div class="mode-toggle">
-          <button class="mode-btn active" id="btn-signin" onclick="setMode('signin')">Se connecter</button>
-          <button class="mode-btn"        id="btn-signup" onclick="setMode('signup')">Créer un compte</button>
+          <button class="mode-btn active" id="btn-signin" type="button">Se connecter</button>
+          <button class="mode-btn"        id="btn-signup" type="button">Créer un compte</button>
         </div>
 
         <div class="form-title" id="form-title">Bon <em>retour</em></div>
@@ -126,88 +126,12 @@
         </div>
 
         <div class="forgot" id="forgot"><a href="#">Mot de passe oublié ?</a></div>
-        <button class="btn-submit" id="btn-submit" onclick="handleSubmit()">Se connecter</button>
+        <button class="btn-submit" id="btn-submit" type="button">Se connecter</button>
         <div class="back-link"><a href="index.html">← Retour à l'accueil</a></div>
       </div>
     </div>
   </div>
 
-  <script>
-    const cur=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
-    let mx=0,my=0,rx=0,ry=0;
-    document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
-    (function loop(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;cur.style.left=mx+'px';cur.style.top=my+'px';ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(loop);})();
-    document.querySelectorAll('a,button,input').forEach(el=>{
-      el.addEventListener('mouseenter',()=>{ring.style.width='44px';ring.style.height='44px';});
-      el.addEventListener('mouseleave',()=>{ring.style.width='30px';ring.style.height='30px';});
-    });
-
-    let mode='signin';
-
-    function setMode(m){
-      mode=m;
-      const s=m==='signup';
-      document.getElementById('btn-signin').classList.toggle('active',!s);
-      document.getElementById('btn-signup').classList.toggle('active',s);
-      document.getElementById('form-title').innerHTML=s?'Créer un <em>compte</em>':'Bon <em>retour</em>';
-      document.getElementById('form-sub').textContent=s?'Rejoignez Finquity et lancez votre première analyse.':'Connectez-vous pour accéder à vos analyses.';
-      document.getElementById('btn-submit').textContent=s?'Créer mon compte':'Se connecter';
-      document.querySelectorAll('.signup-only').forEach(el=>el.classList.toggle('show',s));
-      document.getElementById('forgot').style.display=s?'none':'';
-      clearErr();
-    }
-
-    function clearErr(){
-      document.querySelectorAll('.field-err').forEach(e=>e.classList.remove('show'));
-      document.querySelectorAll('input').forEach(i=>i.classList.remove('err'));
-      document.getElementById('form-error').classList.remove('show');
-    }
-    function fErr(iid,eid){document.getElementById(iid).classList.add('err');document.getElementById(eid).classList.add('show');}
-    function gErr(msg){const el=document.getElementById('form-error');el.textContent=msg;el.classList.add('show');}
-
-    function handleSubmit(){
-      clearErr();
-      const email=document.getElementById('i-email').value.trim();
-      const pass=document.getElementById('i-pass').value;
-      let ok=true;
-      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){fErr('i-email','e-email');ok=false;}
-      if(pass.length<8){fErr('i-pass','e-pass');ok=false;}
-      if(mode==='signup'){
-        const name=document.getElementById('i-name').value.trim();
-        const confirm=document.getElementById('i-confirm').value;
-        if(!name){fErr('i-name','e-name');ok=false;}
-        if(confirm!==pass){fErr('i-confirm','e-confirm');ok=false;}
-        if(!ok)return;
-        doSignUp(name,email,pass);
-      } else {
-        if(!ok)return;
-        doSignIn(email,pass);
-      }
-    }
-
-    function doSignIn(email,pass){
-      const users=JSON.parse(localStorage.getItem('finquity_users')||'[]');
-      const user=users.find(u=>u.email===email&&u.password===pass);
-      if(!user){gErr('Email ou mot de passe incorrect.');return;}
-      localStorage.setItem('finquity_session',JSON.stringify({email:user.email,name:user.name}));
-      const store=JSON.parse(localStorage.getItem('finquity_data')||'{}');
-      // Données existantes → Dashboard, sinon → Import
-      window.location.href=(store.bilan||store.cr)?'Dashboard.html':'import.html';
-    }
-
-    function doSignUp(name,email,pass){
-      const users=JSON.parse(localStorage.getItem('finquity_users')||'[]');
-      if(users.find(u=>u.email===email)){gErr('Un compte existe déjà avec cet email.');return;}
-      const company=document.getElementById('i-company').value.trim();
-      users.push({name,email,password:pass,company,createdAt:new Date().toISOString()});
-      localStorage.setItem('finquity_users',JSON.stringify(users));
-      localStorage.setItem('finquity_session',JSON.stringify({email,name}));
-      localStorage.setItem('finquity_data',JSON.stringify({meta:{company,sector:'',year:new Date().getFullYear(),lastUpdated:new Date().toISOString()}}));
-      // Nouveau compte → toujours Import
-      window.location.href='import.html';
-    }
-
-    document.addEventListener('keydown',e=>{if(e.key==='Enter')handleSubmit();});
-  </script>
+  <script src="login.js"></script>
 </body>
 </html>
