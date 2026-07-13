@@ -1,17 +1,23 @@
 /**
  * Finquity — login.js
- * Handles authentication UI, validation, and API calls.
+ * Gère l'UI d'authentification (connexion / création de compte),
+ * la validation des champs, et la persistance via localStorage.
  *
- * Structure:
+ * NB : Ce projet n'a pas de backend pour l'instant. Toute l'app
+ * (Dashboard.html, import.html, ...) lit/écrit dans localStorage
+ * sous les clés 'finquity_users', 'finquity_session', 'finquity_data'.
+ * Ce fichier suit donc la même logique pour rester cohérent avec le reste
+ * de l'application, plutôt que d'appeler une API /api/auth/... qui n'existe pas.
+ *
+ * Structure :
  *   1. Config
  *   2. DOM references
- *   3. Cursor
- *   4. Password toggle
- *   5. Validation
- *   6. Auth API
- *   7. UI state machine  (idle → loading → success | error)
- *   8. Event listeners
- *   9. Init
+ *   3. Cursor (effet visuel)
+ *   4. Validation
+ *   5. Auth Store (localStorage)
+ *   6. UI state (erreurs, mode signin/signup)
+ *   7. Handlers
+ *   8. Init
  */
 
 'use strict';
@@ -20,22 +26,18 @@
    1. CONFIG
    ───────────────────────────────────────────── */
 const CONFIG = {
-  api: {
-    baseUrl:  '/api',          // swap for your real base URL
-    login:    '/api/auth/login',
-    sso:      '/api/auth/sso',
-    forgot:   '/api/auth/forgot-password',
-  },
   redirect: {
-    dashboard: 'Dashboard.html',
-    delay:     3000,           // ms before redirect after success
+    afterSignupNoData: 'import.html',
+    afterSigninWithData: 'Dashboard.html',
+    afterSigninNoData: 'import.html',
   },
   validation: {
     minPasswordLength: 8,
   },
   storage: {
-    tokenKey:  'fq_token',
-    userKey:   'fq_user',
+    usersKey:   'finquity_users',
+    sessionKey: 'finquity_session',
+    dataKey:    'finquity_data',
   },
 };
 
@@ -44,29 +46,35 @@ const CONFIG = {
    2. DOM REFERENCES
    ───────────────────────────────────────────── */
 const DOM = {
-  get form()         { return document.getElementById('loginForm');    },
-  get emailInput()   { return document.getElementById('email');        },
-  get pwdInput()     { return document.getElementById('password');     },
-  get emailError()   { return document.getElementById('emailError');   },
-  get pwdError()     { return document.getElementById('pwdError');     },
-  get submitBtn()    { return document.getElementById('submitBtn');    },
-  get arrowIcon()    { return document.getElementById('arrowIcon');    },
-  get pwdToggle()    { return document.getElementById('pwdToggle');    },
-  get eyeIcon()      { return document.getElementById('eyeIcon');      },
-  get successWrap()  { return document.getElementById('successWrap'); },
-  get progressFill() { return document.getElementById('progressFill'); },
-  get cursor()       { return document.getElementById('cursor');       },
-  get cursorRing()   { return document.getElementById('cursorRing');   },
-  get globalError()  { return document.getElementById('globalError');  },
+  get btnSignin()  { return document.getElementById('btn-signin');  },
+  get btnSignup()  { return document.getElementById('btn-signup');  },
+  get formTitle()  { return document.getElementById('form-title');  },
+  get formSub()    { return document.getElementById('form-sub');    },
+  get formError()  { return document.getElementById('form-error');  },
+  get forgot()     { return document.getElementById('forgot');      },
+  get btnSubmit()  { return document.getElementById('btn-submit');  },
+
+  get iName()      { return document.getElementById('i-name');      },
+  get iEmail()     { return document.getElementById('i-email');     },
+  get iPass()      { return document.getElementById('i-pass');      },
+  get iConfirm()   { return document.getElementById('i-confirm');   },
+  get iCompany()   { return document.getElementById('i-company');   },
+
+  get eName()      { return document.getElementById('e-name');      },
+  get eEmail()     { return document.getElementById('e-email');     },
+  get ePass()      { return document.getElementById('e-pass');      },
+  get eConfirm()   { return document.getElementById('e-confirm');   },
+
+  get cursor()     { return document.getElementById('cursor');      },
+  get cursorRing() { return document.getElementById('cursorRing');  },
 };
 
 
 /* ─────────────────────────────────────────────
-   3. CURSOR
+   3. CURSOR (effet visuel, indépendant de l'auth)
    ───────────────────────────────────────────── */
 const Cursor = {
-  mx: 0, my: 0,
-  rx: 0, ry: 0,
+  mx: 0, my: 0, rx: 0, ry: 0,
 
   init() {
     document.addEventListener('mousemove', e => {
@@ -80,12 +88,9 @@ const Cursor = {
   _loop() {
     this.rx += (this.mx - this.rx) * 0.12;
     this.ry += (this.my - this.ry) * 0.12;
-
-    const c = DOM.cursor;
-    const r = DOM.cursorRing;
+    const c = DOM.cursor, r = DOM.cursorRing;
     if (c) { c.style.left = this.mx + 'px'; c.style.top = this.my + 'px'; }
     if (r) { r.style.left = this.rx + 'px'; r.style.top = this.ry + 'px'; }
-
     requestAnimationFrame(() => this._loop());
   },
 
@@ -93,15 +98,11 @@ const Cursor = {
     document.querySelectorAll('a, button, input').forEach(el => {
       el.addEventListener('mouseenter', () => {
         const r = DOM.cursorRing;
-        const c = DOM.cursor;
-        if (r) { r.style.width = '46px'; r.style.height = '46px'; }
-        if (c) c.style.transform = 'translate(-50%,-50%) scale(1.4)';
+        if (r) { r.style.width = '44px'; r.style.height = '44px'; }
       });
       el.addEventListener('mouseleave', () => {
         const r = DOM.cursorRing;
-        const c = DOM.cursor;
         if (r) { r.style.width = '30px'; r.style.height = '30px'; }
-        if (c) c.style.transform = 'translate(-50%,-50%) scale(1)';
       });
     });
   },
@@ -109,343 +110,176 @@ const Cursor = {
 
 
 /* ─────────────────────────────────────────────
-   4. PASSWORD TOGGLE
-   ───────────────────────────────────────────── */
-const PasswordToggle = {
-  visible: false,
-
-  init() {
-    DOM.pwdToggle?.addEventListener('click', () => this.toggle());
-  },
-
-  toggle() {
-    this.visible = !this.visible;
-    DOM.pwdInput.type = this.visible ? 'text' : 'password';
-    this._updateIcon();
-  },
-
-  _updateIcon() {
-    if (!DOM.eyeIcon) return;
-    DOM.eyeIcon.innerHTML = this.visible
-      ? '<path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z"/><line x1="2" y1="2" x2="14" y2="14"/>'
-      : '<path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z"/><circle cx="8" cy="8" r="2"/>';
-  },
-};
-
-
-/* ─────────────────────────────────────────────
-   5. VALIDATION
+   4. VALIDATION
    ───────────────────────────────────────────── */
 const Validator = {
-  rules: {
-    email(value) {
-      if (!value.trim())                               return 'Email address is required.';
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))  return 'Please enter a valid email address.';
-      return null;
-    },
-    password(value) {
-      if (!value)                                                       return 'Password is required.';
-      if (value.length < CONFIG.validation.minPasswordLength)
-        return `Password must be at least ${CONFIG.validation.minPasswordLength} characters.`;
-      return null;
-    },
+  isEmailValid(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
   },
-
-  /**
-   * Validate a single field.
-   * @param {'email'|'password'} field
-   * @param {string} value
-   * @returns {string|null} error message, or null if valid
-   */
-  validateField(field, value) {
-    return this.rules[field]?.(value) ?? null;
-  },
-
-  /**
-   * Validate the full form. Shows/hides error messages.
-   * @returns {boolean} true if valid
-   */
-  validateForm() {
-    const email    = DOM.emailInput?.value ?? '';
-    const password = DOM.pwdInput?.value   ?? '';
-
-    const emailErr = this.validateField('email',    email);
-    const pwdErr   = this.validateField('password', password);
-
-    this._setFieldError('email',    emailErr);
-    this._setFieldError('password', pwdErr);
-
-    return !emailErr && !pwdErr;
-  },
-
-  /** Show or clear error for one field */
-  _setFieldError(field, message) {
-    const input = field === 'email' ? DOM.emailInput : DOM.pwdInput;
-    const errEl = field === 'email' ? DOM.emailError  : DOM.pwdError;
-
-    if (!input || !errEl) return;
-
-    if (message) {
-      input.classList.add('error');
-      errEl.textContent = message;
-      errEl.classList.add('show');
-    } else {
-      input.classList.remove('error');
-      errEl.classList.remove('show');
-    }
-  },
-
-  /** Clear all field errors */
-  clearFieldError(field) {
-    this._setFieldError(field, null);
+  isPasswordValid(value) {
+    return value.length >= CONFIG.validation.minPasswordLength;
   },
 };
 
 
 /* ─────────────────────────────────────────────
-   6. AUTH API
+   5. AUTH STORE (localStorage)
    ───────────────────────────────────────────── */
-const AuthAPI = {
+const AuthStore = {
+  _getUsers() {
+    try { return JSON.parse(localStorage.getItem(CONFIG.storage.usersKey) || '[]'); }
+    catch (_) { return []; }
+  },
+  _saveUsers(users) {
+    localStorage.setItem(CONFIG.storage.usersKey, JSON.stringify(users));
+  },
+  _setSession(email, name) {
+    localStorage.setItem(CONFIG.storage.sessionKey, JSON.stringify({ email, name }));
+  },
+  _getData() {
+    try { return JSON.parse(localStorage.getItem(CONFIG.storage.dataKey) || '{}'); }
+    catch (_) { return {}; }
+  },
+
   /**
-   * POST /api/auth/login
-   * @param {{ email: string, password: string }} credentials
-   * @returns {Promise<{ token: string, user: object }>}
+   * @returns {{ok:true,hasData:boolean}|{ok:false,message:string}}
    */
-  async login({ email, password }) {
-    const res = await fetch(CONFIG.api.login, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ email, password }),
-    });
+  signIn(email, password) {
+    const users = this._getUsers();
+    const user = users.find(u => u.email === email && u.password === password);
+    if (!user) return { ok: false, message: 'Email ou mot de passe incorrect.' };
 
-    const data = await res.json().catch(() => ({}));
+    this._setSession(user.email, user.name);
+    const store = this._getData();
+    return { ok: true, hasData: Boolean(store.bilan || store.cr) };
+  },
 
-    if (!res.ok) {
-      // Normalise backend error messages
-      const message = data?.message ?? data?.error ?? this._httpError(res.status);
-      throw new AuthError(message, res.status);
+  /**
+   * @returns {{ok:true}|{ok:false,message:string}}
+   */
+  signUp({ name, email, password, company }) {
+    const users = this._getUsers();
+    if (users.find(u => u.email === email)) {
+      return { ok: false, message: 'Un compte existe déjà avec cet email.' };
     }
 
-    return data;   // { token, user }
-  },
+    users.push({ name, email, password, company, createdAt: new Date().toISOString() });
+    this._saveUsers(users);
+    this._setSession(email, name);
 
-  /** Stub: redirect to SSO provider */
-  redirectToSSO() {
-    window.location.href = CONFIG.api.sso;
-  },
+    localStorage.setItem(CONFIG.storage.dataKey, JSON.stringify({
+      meta: { company, sector: '', year: new Date().getFullYear(), lastUpdated: new Date().toISOString() },
+    }));
 
-  /** POST /api/auth/forgot-password */
-  async forgotPassword(email) {
-    const res = await fetch(CONFIG.api.forgot, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ email }),
-    });
-    if (!res.ok) throw new Error('Could not send reset link. Please try again.');
-    return true;
-  },
-
-  /** Human-readable HTTP error fallback */
-  _httpError(status) {
-    const map = {
-      400: 'Invalid request. Please check your inputs.',
-      401: 'Incorrect email or password.',
-      403: 'Your account has been suspended. Please contact support.',
-      404: 'No account found with this email address.',
-      429: 'Too many attempts. Please wait a moment and try again.',
-      500: 'Server error. Please try again later.',
-    };
-    return map[status] ?? `Unexpected error (${status}). Please try again.`;
+    return { ok: true };
   },
 };
 
-/** Typed auth error for UI differentiation */
-class AuthError extends Error {
-  constructor(message, status) {
-    super(message);
-    this.name   = 'AuthError';
-    this.status = status;
-  }
-}
-
 
 /* ─────────────────────────────────────────────
-   7. UI STATE MACHINE
-   States: idle → loading → success | error
+   6. UI STATE (mode signin/signup + erreurs)
    ───────────────────────────────────────────── */
 const UI = {
+  mode: 'signin',
 
-  /** Persist auth data to session storage */
-  _storeSession({ token, user }) {
-    sessionStorage.setItem(CONFIG.storage.tokenKey, token);
-    sessionStorage.setItem(CONFIG.storage.userKey, JSON.stringify(user));
+  setMode(mode) {
+    this.mode = mode;
+    const isSignup = mode === 'signup';
+
+    DOM.btnSignin?.classList.toggle('active', !isSignup);
+    DOM.btnSignup?.classList.toggle('active', isSignup);
+
+    if (DOM.formTitle) DOM.formTitle.innerHTML = isSignup ? 'Créer un <em>compte</em>' : 'Bon <em>retour</em>';
+    if (DOM.formSub)   DOM.formSub.textContent = isSignup
+      ? 'Rejoignez Finquity et lancez votre première analyse.'
+      : 'Connectez-vous pour accéder à vos analyses.';
+    if (DOM.btnSubmit) DOM.btnSubmit.textContent = isSignup ? 'Créer mon compte' : 'Se connecter';
+
+    document.querySelectorAll('.signup-only').forEach(el => el.classList.toggle('show', isSignup));
+    if (DOM.forgot) DOM.forgot.style.display = isSignup ? 'none' : '';
+
+    this.clearErrors();
   },
 
-  /** Transition: idle → loading */
-  setLoading() {
-    const btn = DOM.submitBtn;
-    if (!btn) return;
-    btn.classList.add('loading');
-    btn.disabled = true;
-    if (DOM.arrowIcon) DOM.arrowIcon.style.display = 'none';
-    this._clearGlobalError();
+  clearErrors() {
+    document.querySelectorAll('.field-err').forEach(e => e.classList.remove('show'));
+    document.querySelectorAll('input').forEach(i => i.classList.remove('err'));
+    DOM.formError?.classList.remove('show');
   },
 
-  /** Transition: loading → idle (on validation fail or recoverable error) */
-  setIdle() {
-    const btn = DOM.submitBtn;
-    if (!btn) return;
-    btn.classList.remove('loading');
-    btn.disabled = false;
-    if (DOM.arrowIcon) DOM.arrowIcon.style.display = '';
+  fieldError(inputEl, errEl) {
+    inputEl?.classList.add('err');
+    errEl?.classList.add('show');
   },
 
-  /** Transition: loading → success */
-  setSuccess(data) {
-    this._storeSession(data);
-
-    if (DOM.form)        DOM.form.style.display    = 'none';
-    if (DOM.successWrap) DOM.successWrap.classList.add('show');
-
-    // Kick off progress bar → redirect
-    requestAnimationFrame(() => {
-      if (DOM.progressFill) DOM.progressFill.style.width = '100%';
-    });
-    setTimeout(() => {
-      window.location.href = CONFIG.redirect.dashboard;
-    }, CONFIG.redirect.delay);
-  },
-
-  /** Transition: loading → error (shows banner above form) */
-  setError(message) {
-    this.setIdle();
-    this._showGlobalError(message);
-  },
-
-  _showGlobalError(message) {
-    let el = DOM.globalError;
-    if (!el) {
-      // Create banner if it doesn't exist yet in the HTML
-      el = document.createElement('div');
-      el.id = 'globalError';
-      el.style.cssText = [
-        'margin-bottom:18px',
-        'padding:13px 16px',
-        'border:1px solid rgba(224,112,112,0.35)',
-        'border-radius:2px',
-        'background:rgba(224,112,112,0.06)',
-        'font-size:13px',
-        'font-weight:300',
-        'color:#e07070',
-        'letter-spacing:0.02em',
-        'line-height:1.5',
-        'animation:fade-up 0.3s forwards',
-      ].join(';');
-      DOM.form?.prepend(el);
-    }
-    el.textContent = message;
-    el.style.display = 'block';
-  },
-
-  _clearGlobalError() {
-    const el = DOM.globalError;
-    if (el) el.style.display = 'none';
+  globalError(message) {
+    if (!DOM.formError) return;
+    DOM.formError.textContent = message;
+    DOM.formError.classList.add('show');
   },
 };
 
 
 /* ─────────────────────────────────────────────
-   8. EVENT LISTENERS
+   7. HANDLERS
    ───────────────────────────────────────────── */
-const Events = {
-  init() {
-    this._bindForm();
-    this._bindInlineValidation();
-    this._bindForgotPassword();
-    this._bindSSO();
+const Handlers = {
+  handleSubmit() {
+    UI.clearErrors();
+
+    const email = DOM.iEmail?.value.trim() ?? '';
+    const pass  = DOM.iPass?.value ?? '';
+    let valid = true;
+
+    if (!Validator.isEmailValid(email)) { UI.fieldError(DOM.iEmail, DOM.eEmail); valid = false; }
+    if (!Validator.isPasswordValid(pass)) { UI.fieldError(DOM.iPass, DOM.ePass); valid = false; }
+
+    if (UI.mode === 'signup') {
+      const name = DOM.iName?.value.trim() ?? '';
+      const confirm = DOM.iConfirm?.value ?? '';
+
+      if (!name) { UI.fieldError(DOM.iName, DOM.eName); valid = false; }
+      if (confirm !== pass) { UI.fieldError(DOM.iConfirm, DOM.eConfirm); valid = false; }
+      if (!valid) return;
+
+      this._signUp(name, email, pass);
+    } else {
+      if (!valid) return;
+      this._signIn(email, pass);
+    }
   },
 
-  _bindForm() {
-    DOM.form?.addEventListener('submit', async e => {
-      e.preventDefault();
+  _signIn(email, pass) {
+    const result = AuthStore.signIn(email, pass);
+    if (!result.ok) { UI.globalError(result.message); return; }
 
-      if (!Validator.validateForm()) return;
-
-      UI.setLoading();
-
-      try {
-        const data = await AuthAPI.login({
-          email:    DOM.emailInput.value.trim(),
-          password: DOM.pwdInput.value,
-        });
-        UI.setSuccess(data);
-      } catch (err) {
-        // 401 → field-level hint; others → banner
-        if (err instanceof AuthError && err.status === 401) {
-          Validator._setFieldError('password', 'Incorrect email or password.');
-          UI.setIdle();
-        } else {
-          UI.setError(err.message);
-        }
-      }
-    });
+    window.location.href = result.hasData
+      ? CONFIG.redirect.afterSigninWithData
+      : CONFIG.redirect.afterSigninNoData;
   },
 
-  /** Validate each field on blur; clear error on input */
-  _bindInlineValidation() {
-    DOM.emailInput?.addEventListener('blur', () => {
-      const err = Validator.validateField('email', DOM.emailInput.value);
-      Validator._setFieldError('email', err);
-    });
-    DOM.emailInput?.addEventListener('input', () => {
-      Validator.clearFieldError('email');
-      UI._clearGlobalError();
-    });
+  _signUp(name, email, pass) {
+    const company = DOM.iCompany?.value.trim() ?? '';
+    const result = AuthStore.signUp({ name, email, password: pass, company });
+    if (!result.ok) { UI.globalError(result.message); return; }
 
-    DOM.pwdInput?.addEventListener('blur', () => {
-      const err = Validator.validateField('password', DOM.pwdInput.value);
-      Validator._setFieldError('password', err);
-    });
-    DOM.pwdInput?.addEventListener('input', () => {
-      Validator.clearFieldError('password');
-      UI._clearGlobalError();
-    });
-  },
-
-  _bindForgotPassword() {
-    document.querySelector('.forgot')?.addEventListener('click', async e => {
-      e.preventDefault();
-      const email = DOM.emailInput?.value.trim();
-      if (!email || Validator.validateField('email', email)) {
-        Validator._setFieldError('email', 'Enter your email first.');
-        DOM.emailInput?.focus();
-        return;
-      }
-      try {
-        await AuthAPI.forgotPassword(email);
-        UI._showGlobalError('Password reset link sent — check your inbox.');
-        // Recolour banner to gold for success tone
-        const el = DOM.globalError;
-        if (el) el.style.color = '#c9a96e';
-      } catch (err) {
-        UI._showGlobalError(err.message);
-      }
-    });
-  },
-
-  _bindSSO() {
-    document.querySelector('.btn-sso')?.addEventListener('click', () => {
-      AuthAPI.redirectToSSO();
-    });
+    window.location.href = CONFIG.redirect.afterSignupNoData;
   },
 };
 
 
 /* ─────────────────────────────────────────────
-   9. INIT
+   8. INIT
    ───────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
   Cursor.init();
-  PasswordToggle.init();
-  Events.init();
+  UI.setMode('signin');
+
+  DOM.btnSignin?.addEventListener('click', () => UI.setMode('signin'));
+  DOM.btnSignup?.addEventListener('click', () => UI.setMode('signup'));
+  DOM.btnSubmit?.addEventListener('click', () => Handlers.handleSubmit());
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') Handlers.handleSubmit();
+  });
 });
