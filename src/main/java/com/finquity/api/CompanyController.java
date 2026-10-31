@@ -7,13 +7,18 @@ import com.finquity.data.DataBase;
 import com.finquity.model.CompanyDiagnosis;
 import com.finquity.model.FinancialStatement;
 import com.finquity.service.AnalysisService;
+import com.finquity.service.ImportService;
 import jakarta.servlet.http.HttpSession;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 // La PME de l'utilisateur connecté : infos, comptes annuels, diagnostic.
 @RestController
@@ -22,10 +27,12 @@ public class CompanyController {
 
     private final DataBase db;
     private final AnalysisService analysis;
+    private final ImportService importer;
 
-    public CompanyController(DataBase db, AnalysisService analysis) {
+    public CompanyController(DataBase db, AnalysisService analysis, ImportService importer) {
         this.db = db;
         this.analysis = analysis;
+        this.importer = importer;
     }
 
     // GET /api/company
@@ -55,6 +62,22 @@ public class CompanyController {
                 req.currentAssets(), req.currentLiabilities(), req.cash());
         db.saveFinancialStatement(fs);
         return fs;
+    }
+
+    /*
+     * POST /api/company/import : envoi d'un fichier Excel (formulaire, champ "file").
+     * Renvoie les années importées.
+     */
+    @PostMapping("/import")
+    public List<FinancialStatement> importExcel(@RequestParam("file") MultipartFile file,
+                                                HttpSession session) throws IOException {
+        int companyId = companyId(session);
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("Aucun fichier reçu.");
+        }
+        try (InputStream in = file.getInputStream()) {
+            return importer.importStatements(companyId, in);
+        }
     }
 
     // GET /api/company/diagnosis : ratios, score, profil, montant plaçable.

@@ -1,6 +1,7 @@
 package com.finquity;
 
 import com.finquity.data.DataBase;
+import com.finquity.service.ImportService;
 import com.finquity.service.AnalysisService;
 import com.finquity.service.AuthService;
 import com.finquity.service.PriceProvider;
@@ -13,6 +14,7 @@ import java.nio.file.Path;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import com.finquity.service.ReportsService;
 
 /*
  * Crée une seule fois chaque service et les relie entre eux.
@@ -63,6 +65,11 @@ public class AppConfig {
     public AnalysisService analysisService(DataBase db) {
         return new AnalysisService(db);
     }
+    
+    @Bean
+    public ReportsService reportsService(DataBase db, AnalysisService analysis) {
+        return new ReportsService(db, analysis);
+    }
 
     @Bean
     public PriceService priceService(DataBase db, PriceProvider provider) {
@@ -72,5 +79,10 @@ public class AppConfig {
     @Bean
     public SimulationService simulationService(DataBase db, PythonRunner python) {
         return new SimulationService(db, python);
+    }
+    
+    @Bean
+    public ImportService importService(DataBase db) {
+        return new ImportService(db);
     }
 }
