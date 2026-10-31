@@ -3,3 +3,9 @@
 out/
 *.class
 out/
+
+target/
+*.db
+lib/
+out/
+eval*
