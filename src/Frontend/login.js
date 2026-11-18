@@ -1,20 +1,18 @@
 /**
  * Finquity — login.js
- * Gère l'UI d'authentification (connexion / création de compte),
- * la validation des champs, et la persistance via localStorage.
- *
- * NB : Ce projet n'a pas de backend pour l'instant. Toute l'app
- * (Dashboard.html, import.html, ...) lit/écrit dans localStorage
- * sous les clés 'finquity_users', 'finquity_session', 'finquity_data'.
- * Ce fichier suit donc la même logique pour rester cohérent avec le reste
- * de l'application, plutôt que d'appeler une API /api/auth/... qui n'existe pas.
+ * Gère l'écran de connexion / création de compte.
+ * Les comptes sont gérés par le serveur Java (AuthService) via l'API :
+ *   POST /api/auth/login     { email, password }
+ *   POST /api/auth/register  { companyName, siren, sector, username, email, password }
+ *   GET  /api/company/statements  (pour savoir si des comptes ont déjà été importés)
+ * La session est gardée par un cookie, envoyé automatiquement par fetch().
  *
  * Structure :
  *   1. Config
  *   2. DOM references
  *   3. Cursor (effet visuel)
  *   4. Validation
- *   5. Auth Store (localStorage)
+ *   5. Api (appels au serveur Java)
  *   6. UI state (erreurs, mode signin/signup)
  *   7. Handlers
  *   8. Init
@@ -33,11 +31,6 @@ const CONFIG = {
   },
   validation: {
     minPasswordLength: 8,
-  },
-  storage: {
-    usersKey:   'finquity_users',
-    sessionKey: 'finquity_session',
-    dataKey:    'finquity_data',
   },
 };
 
@@ -59,11 +52,15 @@ const DOM = {
   get iPass()      { return document.getElementById('i-pass');      },
   get iConfirm()   { return document.getElementById('i-confirm');   },
   get iCompany()   { return document.getElementById('i-company');   },
+  get iSiren()     { return document.getElementById('i-siren');     },
+  get iSector()    { return document.getElementById('i-sector');    },
 
   get eName()      { return document.getElementById('e-name');      },
   get eEmail()     { return document.getElementById('e-email');     },
   get ePass()      { return document.getElementById('e-pass');      },
   get eConfirm()   { return document.getElementById('e-confirm');   },
+  get eCompany()   { return document.getElementById('e-company');   },
+  get eSiren()     { return document.getElementById('e-siren');     },
 
   get cursor()     { return document.getElementById('cursor');      },
   get cursorRing() { return document.getElementById('cursorRing');  },
@@ -110,7 +107,7 @@ const Cursor = {
 
 
 /* ─────────────────────────────────────────────
-   4. VALIDATION
+   4. VALIDATION (le serveur revérifie tout)
    ───────────────────────────────────────────── */
 const Validator = {
   isEmailValid(value) {
@@ -119,59 +116,50 @@ const Validator = {
   isPasswordValid(value) {
     return value.length >= CONFIG.validation.minPasswordLength;
   },
+  isSirenValid(value) {
+    return /^\d{9}$/.test(value.replace(/\s/g, ''));
+  },
 };
 
 
 /* ─────────────────────────────────────────────
-   5. AUTH STORE (localStorage)
+   5. API (appels au serveur Java)
    ───────────────────────────────────────────── */
-const AuthStore = {
-  _getUsers() {
-    try { return JSON.parse(localStorage.getItem(CONFIG.storage.usersKey) || '[]'); }
-    catch (_) { return []; }
-  },
-  _saveUsers(users) {
-    localStorage.setItem(CONFIG.storage.usersKey, JSON.stringify(users));
-  },
-  _setSession(email, name) {
-    localStorage.setItem(CONFIG.storage.sessionKey, JSON.stringify({ email, name }));
-  },
-  _getData() {
-    try { return JSON.parse(localStorage.getItem(CONFIG.storage.dataKey) || '{}'); }
-    catch (_) { return {}; }
-  },
-
-  /**
-   * @returns {{ok:true,hasData:boolean}|{ok:false,message:string}}
-   */
-  signIn(email, password) {
-    const users = this._getUsers();
-    const user = users.find(u => u.email === email && u.password === password);
-    if (!user) return { ok: false, message: 'Email ou mot de passe incorrect.' };
-
-    this._setSession(user.email, user.name);
-    const store = this._getData();
-    return { ok: true, hasData: Boolean(store.bilan || store.cr) };
-  },
-
-  /**
-   * @returns {{ok:true}|{ok:false,message:string}}
-   */
-  signUp({ name, email, password, company }) {
-    const users = this._getUsers();
-    if (users.find(u => u.email === email)) {
-      return { ok: false, message: 'Un compte existe déjà avec cet email.' };
+const Api = {
+  // Envoie une requête JSON. Renvoie les données, ou lance une erreur avec le message du serveur.
+  async request(method, url, body) {
+    let res;
+    try {
+      res = await fetch(url, {
+        method,
+        headers: body ? { 'Content-Type': 'application/json' } : {},
+        body: body ? JSON.stringify(body) : undefined,
+      });
+    } catch (_) {
+      throw new Error('Serveur injoignable. Lancez « mvn spring-boot:run » puis ouvrez http://localhost:8080/login.html');
     }
+    const text = await res.text();
+    const data = text ? JSON.parse(text) : null;
+    if (!res.ok) throw new Error((data && data.error) || 'Erreur ' + res.status);
+    return data;
+  },
 
-    users.push({ name, email, password, company, createdAt: new Date().toISOString() });
-    this._saveUsers(users);
-    this._setSession(email, name);
+  login(email, password) {
+    return this.request('POST', '/api/auth/login', { email, password });
+  },
 
-    localStorage.setItem(CONFIG.storage.dataKey, JSON.stringify({
-      meta: { company, sector: '', year: new Date().getFullYear(), lastUpdated: new Date().toISOString() },
-    }));
+  register({ companyName, siren, sector, username, email, password }) {
+    return this.request('POST', '/api/auth/register', { companyName, siren, sector, username, email, password });
+  },
 
-    return { ok: true };
+  // true si l'entreprise a déjà au moins une année de comptes enregistrée
+  async hasStatements() {
+    try {
+      const list = await this.request('GET', '/api/company/statements');
+      return Array.isArray(list) && list.length > 0;
+    } catch (_) {
+      return false;
+    }
   },
 };
 
@@ -217,6 +205,10 @@ const UI = {
     DOM.formError.textContent = message;
     DOM.formError.classList.add('show');
   },
+
+  setLoading(isLoading) {
+    if (DOM.btnSubmit) DOM.btnSubmit.disabled = isLoading;
+  },
 };
 
 
@@ -235,35 +227,48 @@ const Handlers = {
     if (!Validator.isPasswordValid(pass)) { UI.fieldError(DOM.iPass, DOM.ePass); valid = false; }
 
     if (UI.mode === 'signup') {
-      const name = DOM.iName?.value.trim() ?? '';
+      const name    = DOM.iName?.value.trim() ?? '';
       const confirm = DOM.iConfirm?.value ?? '';
+      const company = DOM.iCompany?.value.trim() ?? '';
+      const siren   = (DOM.iSiren?.value ?? '').replace(/\s/g, '');
+      const sector  = DOM.iSector?.value.trim() ?? '';
 
       if (!name) { UI.fieldError(DOM.iName, DOM.eName); valid = false; }
       if (confirm !== pass) { UI.fieldError(DOM.iConfirm, DOM.eConfirm); valid = false; }
+      if (!company) { UI.fieldError(DOM.iCompany, DOM.eCompany); valid = false; }
+      if (!Validator.isSirenValid(siren)) { UI.fieldError(DOM.iSiren, DOM.eSiren); valid = false; }
       if (!valid) return;
 
-      this._signUp(name, email, pass);
+      this._signUp({ companyName: company, siren, sector, username: name, email, password: pass });
     } else {
       if (!valid) return;
       this._signIn(email, pass);
     }
   },
 
-  _signIn(email, pass) {
-    const result = AuthStore.signIn(email, pass);
-    if (!result.ok) { UI.globalError(result.message); return; }
-
-    window.location.href = result.hasData
-      ? CONFIG.redirect.afterSigninWithData
-      : CONFIG.redirect.afterSigninNoData;
+  async _signIn(email, pass) {
+    UI.setLoading(true);
+    try {
+      await Api.login(email, pass);
+      const hasData = await Api.hasStatements();
+      window.location.href = hasData ? CONFIG.redirect.afterSigninWithData : CONFIG.redirect.afterSigninNoData;
+    } catch (err) {
+      UI.globalError(err.message);
+    } finally {
+      UI.setLoading(false);
+    }
   },
 
-  _signUp(name, email, pass) {
-    const company = DOM.iCompany?.value.trim() ?? '';
-    const result = AuthStore.signUp({ name, email, password: pass, company });
-    if (!result.ok) { UI.globalError(result.message); return; }
-
-    window.location.href = CONFIG.redirect.afterSignupNoData;
+  async _signUp(form) {
+    UI.setLoading(true);
+    try {
+      await Api.register(form);   // le serveur connecte directement le nouvel utilisateur
+      window.location.href = CONFIG.redirect.afterSignupNoData;
+    } catch (err) {
+      UI.globalError(err.message);
+    } finally {
+      UI.setLoading(false);
+    }
   },
 };
 
