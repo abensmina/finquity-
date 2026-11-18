@@ -268,3 +268,7 @@
 .scroll-bar { -fx-background-color: transparent; }
 .scroll-bar .thumb { -fx-background-color: #1c1c1f; -fx-background-radius: 4; }
 .scroll-bar .increment-button, .scroll-bar .decrement-button { -fx-opacity: 0; -fx-padding: 0; }
+
+/* Légende du camembert du portefeuille */
+.chart-legend-item { -fx-text-fill: #9191a0; -fx-font-size: 12px; }
+.chart-legend-item-symbol { -fx-background-radius: 2px; -fx-padding: 5px; }

@@ -282,13 +282,33 @@ public abstract class Screen {
      * Lance l'appel au serveur dans un autre thread (la fenêtre ne se fige pas),
      * puis revient dans le thread JavaFX pour mettre à jour l'écran.
      */
+    /*
+     * Si la session a expiré (par exemple après un redémarrage du serveur),
+     * on renvoie vers l'écran de connexion au lieu de laisser un écran vide.
+     */
+    private boolean sentToLogin = false; // un écran lance parfois plusieurs appels : une seule redirection
+
+    private void onError(ApiException e) {
+        if (e.isNotLoggedIn() && !(this instanceof LoginScreen)) {
+            if (sentToLogin) {
+                return;
+            }
+            sentToLogin = true;
+            LoginScreen login = new LoginScreen(nav);
+            nav.show(login);
+            login.showError("Votre session a expiré. Reconnectez-vous.");
+            return;
+        }
+        showError(e.getMessage());
+    }
+
     protected <T> void call(ApiCall<T> request, Consumer<T> onSuccess) {
         Thread worker = new Thread(() -> {
             try {
                 T result = request.run();
                 Platform.runLater(() -> onSuccess.accept(result));
             } catch (ApiException e) {
-                Platform.runLater(() -> showError(e.getMessage()));
+                Platform.runLater(() -> onError(e));
             }
         });
         worker.setDaemon(true);

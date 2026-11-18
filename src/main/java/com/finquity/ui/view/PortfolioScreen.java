@@ -8,6 +8,7 @@ import com.finquity.ui.Navigator;
 import java.util.Locale;
 import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
+import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.Button;
@@ -56,9 +57,12 @@ public class PortfolioScreen extends Screen {
     @Override
     protected Node content() {
         buildTable();
-        pie.setLabelsVisible(true);
-        pie.setLegendVisible(false);
-        pie.setPrefSize(360, 300);
+        // Les étiquettes autour du camembert se chevauchent : on utilise une légende en dessous.
+        pie.setLabelsVisible(false);
+        pie.setLegendVisible(true);
+        pie.setLegendSide(Side.BOTTOM);
+        pie.setPrefSize(300, 320);
+        pie.setMinWidth(300);
         pie.setAnimated(false);
         pie.getStyleClass().add("chart-card");
         total.getStyleClass().addAll("kpi-val", "gold");
@@ -115,14 +119,17 @@ public class PortfolioScreen extends Screen {
     }
 
     private void buildTable() {
-        String[][] cols = {{"Symbole", "symbol"}, {"Nom", "name"}, {"Type", "type"}, {"Quantité", "quantity"},
-            {"Prix", "price"}, {"Valeur", "value"}, {"Poids", "weight"}};
+        // Libellé, propriété lue, largeur minimale (pour que les montants ne soient pas coupés).
+        String[][] cols = {{"Symbole", "symbol", "60"}, {"Nom", "name", "120"}, {"Type", "type", "95"},
+            {"Quantité", "quantity", "60"}, {"Prix", "price", "85"}, {"Valeur", "value", "105"},
+            {"Poids", "weight", "60"}};
         for (String[] c : cols) {
             TableColumn<PositionRow, Object> col = new TableColumn<>(c[0]);
             col.setCellValueFactory(new PropertyValueFactory<>(c[1]));
+            col.setMinWidth(Double.parseDouble(c[2]));
             table.getColumns().add(col);
         }
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
         table.setPlaceholder(new Label("Aucun placement pour l'instant."));
         table.setPrefHeight(240);
     }
@@ -132,7 +139,7 @@ public class PortfolioScreen extends Screen {
         table.getItems().setAll(view.positions().stream().map(PositionRow::new).toList());
         pie.getData().clear();
         for (PositionView p : view.positions()) {
-            pie.getData().add(new PieChart.Data(p.symbol(), p.value()));
+            pie.getData().add(new PieChart.Data(p.symbol() + "  " + String.format(Locale.FRANCE, "%.1f %%", p.weight() * 100), p.value()));
         }
     }
 

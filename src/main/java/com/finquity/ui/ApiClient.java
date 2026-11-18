@@ -194,7 +194,8 @@ public class ApiClient {
             throw new ApiException("Requête interrompue.");
         }
         if (res.statusCode() >= 400) {
-            throw new ApiException(errorMessage(new String(res.body(), StandardCharsets.UTF_8), res.statusCode()));
+            throw new ApiException(errorMessage(new String(res.body(), StandardCharsets.UTF_8), res.statusCode()),
+                    res.statusCode());
         }
         return res;
     }
