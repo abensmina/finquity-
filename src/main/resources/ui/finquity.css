@@ -1,0 +1,270 @@
+/*
+ * Thème Finquity : les mêmes couleurs et polices que les pages HTML.
+ * ink #0a0a0b · ink-2 #111113 · ink-3 #1c1c1f · or #c9a96e · or clair #e2c99a
+ * gris #6b6b74 · gris-2 #9191a0 · blanc #f5f4f0 · vert #4caf7d · rouge #e07070
+ * Polices : Cormorant Garamond (titres), DM Sans (texte).
+ */
+
+.root {
+    -fx-font-family: "DM Sans";
+    -fx-font-size: 13px;
+    -fx-base: #111113;
+    -fx-background: #0a0a0b;
+    -fx-control-inner-background: #111113;
+    -fx-accent: #c9a96e;
+    -fx-focus-color: rgba(201, 169, 110, 0.6);
+    -fx-faint-focus-color: transparent;
+}
+
+.app { -fx-background-color: #0a0a0b; }
+.label { -fx-text-fill: #f5f4f0; }
+
+/* ---------- Menu de gauche ---------- */
+.sidebar {
+    -fx-background-color: #111113;
+    -fx-border-color: rgba(255, 255, 255, 0.07);
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 32 0 24 0;
+}
+.sidebar-logo { -fx-padding: 0 28 48 28; }
+.logo-text { -fx-font-family: "Cormorant Garamond"; -fx-font-size: 22px; -fx-fill: #f5f4f0; }
+.logo-gold { -fx-fill: #c9a96e; }
+.sidebar-section {
+    -fx-font-size: 10px; -fx-text-fill: #6b6b74; -fx-padding: 0 28 10 28;
+}
+.nav-item {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+    -fx-text-fill: #9191a0;
+    -fx-font-size: 13px;
+    -fx-alignment: center-left;
+    -fx-padding: 11 28 11 26;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 0 2;
+    -fx-cursor: hand;
+}
+.nav-item:hover { -fx-text-fill: #f5f4f0; -fx-background-color: rgba(255, 255, 255, 0.03); }
+.nav-item.active {
+    -fx-text-fill: #c9a96e;
+    -fx-background-color: rgba(201, 169, 110, 0.06);
+    -fx-border-color: #c9a96e;
+}
+
+/* ---------- Barre du haut ---------- */
+.topbar {
+    -fx-background-color: rgba(10, 10, 11, 0.85);
+    -fx-border-color: rgba(255, 255, 255, 0.07);
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 0 48 0 48;
+    -fx-alignment: center-left;
+    -fx-min-height: 64px;
+    -fx-pref-height: 64px;
+}
+.topbar-title { -fx-font-size: 14px; -fx-text-fill: #f5f4f0; }
+.topbar-sub { -fx-font-size: 11px; -fx-text-fill: #6b6b74; }
+
+/* ---------- Page ---------- */
+.page-scroll, .page-scroll > .viewport { -fx-background-color: #0a0a0b; -fx-background: #0a0a0b; }
+.page { -fx-padding: 52 48 52 48; -fx-background-color: #0a0a0b; }
+.headline { -fx-font-family: "Cormorant Garamond"; -fx-font-size: 42px; -fx-fill: #f5f4f0; }
+.headline-em { -fx-font-family: "Cormorant Garamond Light Italic"; -fx-fill: #c9a96e; }
+.company-meta { -fx-font-size: 12px; -fx-text-fill: #9191a0; }
+.section-title { -fx-font-size: 10px; -fx-text-fill: #6b6b74; }
+
+/* ---------- Cartes ---------- */
+.card {
+    -fx-background-color: #111113;
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(255, 255, 255, 0.07);
+    -fx-border-radius: 8;
+    -fx-padding: 22 24 22 24;
+}
+.card-title { -fx-font-family: "Cormorant Garamond"; -fx-font-size: 22px; -fx-text-fill: #f5f4f0; }
+.card-text { -fx-font-size: 13px; -fx-text-fill: #9191a0; -fx-line-spacing: 3px; }
+.kpi-label { -fx-font-size: 10px; -fx-text-fill: #6b6b74; }
+.kpi-val { -fx-font-size: 26px; -fx-text-fill: #f5f4f0; }
+.kpi-val.gold { -fx-text-fill: #c9a96e; }
+.kpi-val.green { -fx-text-fill: #4caf7d; }
+.kpi-val.big { -fx-font-size: 40px; }
+.kpi-sub { -fx-font-size: 11px; -fx-text-fill: #6b6b74; }
+
+.module-card { -fx-cursor: hand; -fx-padding: 28; }
+.module-card:hover { -fx-border-color: rgba(201, 169, 110, 0.25); -fx-background-color: rgba(201, 169, 110, 0.06); }
+.module-name { -fx-font-family: "Cormorant Garamond"; -fx-font-size: 22px; -fx-text-fill: #f5f4f0; }
+.module-desc { -fx-font-size: 12px; -fx-text-fill: #9191a0; }
+.status-ready, .status-pending, .badge-ok, .badge-warn, .badge-bad, .badge-neutral {
+    -fx-font-size: 10px; -fx-padding: 3 10 3 10; -fx-background-radius: 2; -fx-border-radius: 2;
+}
+.status-ready, .badge-ok {
+    -fx-background-color: rgba(76, 175, 125, 0.12); -fx-text-fill: #4caf7d; -fx-border-color: rgba(76, 175, 125, 0.2);
+}
+.status-pending, .badge-neutral {
+    -fx-background-color: rgba(255, 255, 255, 0.04); -fx-text-fill: #6b6b74; -fx-border-color: rgba(255, 255, 255, 0.07);
+}
+.badge-warn {
+    -fx-background-color: rgba(201, 169, 110, 0.12); -fx-text-fill: #c9a96e; -fx-border-color: rgba(201, 169, 110, 0.25);
+}
+.badge-bad {
+    -fx-background-color: rgba(224, 112, 112, 0.12); -fx-text-fill: #e07070; -fx-border-color: rgba(224, 112, 112, 0.25);
+}
+
+.no-data { -fx-padding: 60 40 60 40; }
+.no-data-sub { -fx-font-size: 14px; -fx-text-fill: #9191a0; -fx-text-alignment: center; }
+
+/* ---------- Ratios et lignes ---------- */
+.ratio-row {
+    -fx-padding: 16 20 16 20;
+    -fx-border-color: rgba(255, 255, 255, 0.07);
+    -fx-border-width: 0 0 1 0;
+    -fx-background-color: #111113;
+}
+.ratio-name { -fx-font-size: 14px; -fx-text-fill: #f5f4f0; }
+.ratio-formula { -fx-font-size: 11px; -fx-text-fill: #6b6b74; }
+.ratio-val { -fx-font-size: 20px; }
+.val-ok { -fx-text-fill: #4caf7d; }
+.val-warn { -fx-text-fill: #c9a96e; }
+.val-bad { -fx-text-fill: #e07070; }
+.val-neutral { -fx-text-fill: #9191a0; }
+.alert { -fx-text-fill: #e2c99a; -fx-font-size: 13px; }
+.table-row {
+    -fx-padding: 12 18 12 18;
+    -fx-background-color: #111113;
+    -fx-background-radius: 6;
+    -fx-border-color: rgba(255, 255, 255, 0.07);
+    -fx-border-radius: 6;
+}
+.row-year { -fx-font-family: "Cormorant Garamond"; -fx-font-size: 20px; -fx-text-fill: #c9a96e; -fx-min-width: 70px; }
+.score-bar > .track { -fx-background-color: #1c1c1f; -fx-background-radius: 2; }
+.score-bar > .bar { -fx-background-color: #c9a96e; -fx-background-radius: 2; -fx-background-insets: 0; }
+
+/* ---------- Messages ---------- */
+.message-error {
+    -fx-text-fill: #e07070; -fx-background-color: rgba(224, 112, 112, 0.08);
+    -fx-border-color: rgba(224, 112, 112, 0.25); -fx-padding: 10 14 10 14; -fx-background-radius: 3; -fx-border-radius: 3;
+}
+.message-ok {
+    -fx-text-fill: #4caf7d; -fx-background-color: rgba(76, 175, 125, 0.08);
+    -fx-border-color: rgba(76, 175, 125, 0.2); -fx-padding: 10 14 10 14; -fx-background-radius: 3; -fx-border-radius: 3;
+}
+
+/* ---------- Champs et boutons ---------- */
+.field-label { -fx-font-size: 10px; -fx-text-fill: #6b6b74; }
+.text-field, .password-field {
+    -fx-background-color: rgba(255, 255, 255, 0.03);
+    -fx-text-fill: #f5f4f0;
+    -fx-prompt-text-fill: #6b6b74;
+    -fx-border-color: rgba(255, 255, 255, 0.07);
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+    -fx-padding: 11 14 11 14;
+    -fx-font-size: 14px;
+}
+.text-field:focused, .password-field:focused { -fx-border-color: rgba(201, 169, 110, 0.25); }
+.combo-box {
+    -fx-background-color: rgba(255, 255, 255, 0.03);
+    -fx-border-color: rgba(255, 255, 255, 0.07);
+    -fx-border-radius: 3; -fx-background-radius: 3; -fx-padding: 4 4 4 4;
+}
+.combo-box .list-cell { -fx-text-fill: #f5f4f0; -fx-background-color: transparent; }
+.combo-box-popup .list-view { -fx-background-color: #1c1c1f; }
+.combo-box-popup .list-cell { -fx-background-color: #1c1c1f; -fx-text-fill: #f5f4f0; }
+.combo-box-popup .list-cell:hover { -fx-background-color: rgba(201, 169, 110, 0.12); }
+
+.btn-gold {
+    -fx-background-color: #c9a96e;
+    -fx-text-fill: #0a0a0b;
+    -fx-font-size: 11px;
+    -fx-font-family: "DM Sans Medium";
+    -fx-background-radius: 2;
+    -fx-padding: 12 22 12 22;
+    -fx-cursor: hand;
+}
+.btn-gold:hover { -fx-background-color: #e2c99a; }
+.btn-outline {
+    -fx-background-color: transparent;
+    -fx-text-fill: #c9a96e;
+    -fx-font-size: 11px;
+    -fx-font-family: "DM Sans Medium";
+    -fx-border-color: rgba(201, 169, 110, 0.25);
+    -fx-border-radius: 2;
+    -fx-background-radius: 2;
+    -fx-padding: 11 22 11 22;
+    -fx-cursor: hand;
+}
+.btn-outline:hover { -fx-background-color: rgba(201, 169, 110, 0.06); }
+
+/* ---------- Écran de connexion ---------- */
+.login-left {
+    -fx-background-color: radial-gradient(center 20% 110%, radius 70%, rgba(201, 169, 110, 0.08), #141416);
+    -fx-border-color: rgba(255, 255, 255, 0.07);
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 52 64 52 64;
+}
+.login-right { -fx-background-color: #0a0a0b; -fx-padding: 52 64 52 64; }
+.brand-text { -fx-font-family: "Cormorant Garamond"; -fx-font-size: 24px; -fx-fill: #f5f4f0; }
+.brand-text.logo-gold, .logo-text.logo-gold { -fx-fill: #c9a96e; }
+.left-label { -fx-font-size: 10px; -fx-text-fill: #c9a96e; }
+.left-headline { -fx-font-family: "Cormorant Garamond"; -fx-font-size: 56px; -fx-fill: #f5f4f0; }
+.left-sub { -fx-font-size: 14px; -fx-text-fill: #9191a0; -fx-line-spacing: 5px; }
+.feat { -fx-font-size: 13px; -fx-text-fill: #9191a0; }
+.feat-dot {
+    -fx-background-color: rgba(201, 169, 110, 0.6); -fx-background-radius: 3;
+    -fx-min-width: 5; -fx-min-height: 5; -fx-max-width: 5; -fx-max-height: 5;
+}
+.left-footer { -fx-font-size: 11px; -fx-text-fill: #6b6b74; }
+.mode-toggle {
+    -fx-background-color: #1c1c1f; -fx-border-color: rgba(255, 255, 255, 0.07);
+    -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 3;
+}
+.mode-btn {
+    -fx-background-color: transparent; -fx-text-fill: #6b6b74; -fx-font-size: 12px;
+    -fx-padding: 9; -fx-background-radius: 2; -fx-cursor: hand;
+    -fx-border-color: transparent; -fx-border-radius: 2;
+}
+.mode-btn.active {
+    -fx-background-color: rgba(201, 169, 110, 0.12); -fx-text-fill: #c9a96e; -fx-border-color: rgba(201, 169, 110, 0.22);
+}
+.form-title { -fx-font-family: "Cormorant Garamond"; -fx-font-size: 32px; -fx-fill: #f5f4f0; }
+.form-sub { -fx-font-size: 13px; -fx-text-fill: #9191a0; }
+
+/* ---------- Graphiques et tableaux ---------- */
+.chart-card {
+    -fx-background-color: #111113;
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(255, 255, 255, 0.07);
+    -fx-border-radius: 8;
+    -fx-padding: 16;
+}
+.chart-plot-background { -fx-background-color: transparent; }
+.chart-vertical-grid-lines, .chart-horizontal-grid-lines { -fx-stroke: rgba(255, 255, 255, 0.05); }
+.chart-alternative-row-fill { -fx-fill: transparent; }
+.axis { -fx-tick-label-fill: #9191a0; -fx-font-size: 11px; }
+.axis-label { -fx-text-fill: #6b6b74; }
+.chart-legend { -fx-background-color: transparent; }
+.chart-legend-item { -fx-text-fill: #9191a0; }
+.chart-pie-label { -fx-fill: #9191a0; }
+.default-color0.chart-bar, .default-color0.chart-series-line, .default-color0.chart-pie, .default-color0.chart-legend-item-symbol { -fx-background-color: #c9a96e; -fx-stroke: #c9a96e; }
+.default-color1.chart-bar, .default-color1.chart-series-line, .default-color1.chart-pie, .default-color1.chart-legend-item-symbol { -fx-background-color: #6b6b74; -fx-stroke: #9191a0; }
+.default-color2.chart-bar, .default-color2.chart-series-line, .default-color2.chart-pie, .default-color2.chart-legend-item-symbol { -fx-background-color: #4caf7d; -fx-stroke: #4caf7d; }
+.default-color3.chart-pie { -fx-pie-color: #e2c99a; }
+.default-color4.chart-pie { -fx-pie-color: #8a6a2e; }
+.default-color0.chart-pie { -fx-pie-color: #c9a96e; }
+.default-color1.chart-pie { -fx-pie-color: #6b6b74; }
+.default-color2.chart-pie { -fx-pie-color: #4caf7d; }
+
+.table-view {
+    -fx-background-color: #111113;
+    -fx-border-color: rgba(255, 255, 255, 0.07);
+    -fx-background-radius: 8; -fx-border-radius: 8;
+}
+.table-view .column-header-background { -fx-background-color: #111113; }
+.table-view .column-header { -fx-background-color: transparent; -fx-border-color: rgba(255, 255, 255, 0.07); -fx-border-width: 0 0 1 0; }
+.table-view .column-header .label { -fx-text-fill: #6b6b74; -fx-font-size: 10px; }
+.table-row-cell { -fx-background-color: #111113; -fx-border-color: rgba(255, 255, 255, 0.05); -fx-border-width: 0 0 1 0; }
+.table-row-cell:selected { -fx-background-color: rgba(201, 169, 110, 0.12); }
+.table-cell { -fx-text-fill: #f5f4f0; -fx-padding: 8 10 8 10; -fx-border-color: transparent; }
+.table-view .placeholder .label { -fx-text-fill: #6b6b74; }
+
+.scroll-bar { -fx-background-color: transparent; }
+.scroll-bar .thumb { -fx-background-color: #1c1c1f; -fx-background-radius: 4; }
+.scroll-bar .increment-button, .scroll-bar .decrement-button { -fx-opacity: 0; -fx-padding: 0; }
